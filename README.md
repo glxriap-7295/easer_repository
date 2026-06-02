@@ -26,7 +26,7 @@
 
 <!-- TODO: Completar con la descripción oficial del proyecto EASER y el alcance del Objetivo 4.1.1 -->
 
-_Por definit._
+_Por definir._
 
 ---
 
@@ -58,7 +58,7 @@ easer_repository/
 
 <!-- TODO: Describir la metodología utilizada en la pasantía -->
 
-_po definir_
+_por definir_
 
 ---
 
