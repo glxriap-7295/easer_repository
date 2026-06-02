@@ -1,11 +1,6 @@
 # EASER — Objetivo 4.1.1
 
 > **Repositorio de pasantía | Junio–Julio 2026**
-
-![Estado](https://img.shields.io/badge/estado-en%20progreso-yellow)
-![Período](https://img.shields.io/badge/período-jun--jul%202026-blue)
-![Licencia](https://img.shields.io/badge/licencia-académica-lightgrey)
-
 ---
 
 ## Tabla de contenidos
