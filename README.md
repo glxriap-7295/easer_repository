@@ -26,7 +26,7 @@
 
 <!-- TODO: Completar con la descripción oficial del proyecto EASER y el alcance del Objetivo 4.1.1 -->
 
-_Pendiente de definición por el equipo._
+_Por definit._
 
 ---
 
@@ -38,16 +38,6 @@ _Pendiente de definición por el equipo._
 - Objetivo 2 *(por definir)*
 - Objetivo 3 *(por definir)*
 
----
-
-## Equipo
-
-<!-- TODO: Completar con los integrantes del equipo -->
-
-| Nombre | Rol | Contacto |
-|--------|-----|----------|
-| *Por definir* | Pasante | — |
-| *Por definir* | Supervisor/a | — |
 
 ---
 
@@ -63,28 +53,12 @@ easer_repository/
 └── README.md    # Este archivo
 ```
 
----
-
-## Plan de trabajo Junio–Julio 2026
-
-| Semana | Actividad | Estado |
-|--------|-----------|--------|
-| Sem 1 (Jun) | *Por definir* | ⏳ Pendiente |
-| Sem 2 (Jun) | *Por definir* | ⏳ Pendiente |
-| Sem 3 (Jun) | *Por definir* | ⏳ Pendiente |
-| Sem 4 (Jun) | *Por definir* | ⏳ Pendiente |
-| Sem 1 (Jul) | *Por definir* | ⏳ Pendiente |
-| Sem 2 (Jul) | *Por definir* | ⏳ Pendiente |
-| Sem 3 (Jul) | *Por definir* | ⏳ Pendiente |
-| Sem 4 (Jul) | *Por definir* | ⏳ Pendiente |
-
----
 
 ## Metodología
 
 <!-- TODO: Describir la metodología utilizada en la pasantía -->
 
-_Pendiente de definición._
+_po definir_
 
 ---
 
@@ -92,7 +66,7 @@ _Pendiente de definición._
 
 <!-- TODO: Detallar los entregables y resultados al finalizar la pasantía -->
 
-_Pendiente de definición._
+_por definir_
 
 ---
 
@@ -102,14 +76,14 @@ _Pendiente de definición._
    ```bash
    git clone https://github.com/glxriap-7295/easer_repository.git
    ```
-2. Navegar a la carpeta correspondiente según la actividad.
+2. Navegar a la carpeta correspondiente.
 3. Consultar la carpeta `/docs` para protocolos y guías.
 
 ---
 
 ## Notas y actualizaciones
 
-_Sin novedades aún._
+_Sin novedades._
 
 ---
 
