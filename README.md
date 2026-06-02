@@ -1,6 +1,6 @@
-# EASER — Objetivo 4.1.1
+# EASER - Repository
 
-> **Repositorio EASER 2026**
+
 ---
 
 ## Tabla de contenidos
