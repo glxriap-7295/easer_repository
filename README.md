@@ -1,6 +1,6 @@
 # EASER — Objetivo 4.1.1
 
-> **Repositorio de pasantía | Junio–Julio 2026**
+> **Repositorio EASER 2026**
 ---
 
 ## Tabla de contenidos
