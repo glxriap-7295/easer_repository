@@ -11,14 +11,25 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && request.auth.token.admin == true;
     }
+    function isCurator() {
+      return isSignedIn() &&
+        (request.auth.token.admin == true || request.auth.token.role == 'curator');
+    }
+
+    // Platform users. The Admin SDK (server) is the only writer — role and
+    // profile changes flow through API routes. A user may read their own doc.
+    match /users/{uid} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      allow write: if false; // server-only via Admin SDK
+    }
 
     // Contributions: created by anyone (incl. anonymous submitters via API),
-    // readable by admins and by the submitter; only admins update status.
+    // readable by curators/admins and by the submitter; only curators+ update.
     match /contributions/{id} {
-      allow read: if isAdmin() ||
+      allow read: if isCurator() ||
         (isSignedIn() && resource.data.submitter.email == request.auth.token.email);
       allow create: if true;        // also validated server-side by API + zod
-      allow update, delete: if isAdmin();
+      allow update, delete: if isCurator();
     }
 
     // Public registry of APPROVED contributions (denormalised, read-only).
@@ -27,13 +38,13 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Audit log — admin read only, server writes via Admin SDK.
+    // Audit log — curator/admin read only, server writes via Admin SDK.
     match /audit/{id} {
-      allow read: if isAdmin();
+      allow read: if isCurator();
       allow write: if false;
     }
 
-    // User profiles / contributor records.
+    // Contributor records (public profiles, Phase 6).
     match /contributors/{id} {
       allow read: if true;
       allow write: if isAdmin();

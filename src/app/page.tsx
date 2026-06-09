@@ -14,9 +14,9 @@ export default function Home() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-gradient-to-b from-brand-700 to-brand-600 text-white">
+      <section className="bg-gradient-to-br from-brand-900 via-brand-800 to-brand-600 text-white">
         <div className="mx-auto max-w-6xl px-4 py-20">
-          <p className="mb-3 text-sm font-medium uppercase tracking-wide text-brand-100">
+          <p className="mb-3 text-sm font-medium uppercase tracking-wide text-brand-200">
             {PARTNERS.join(" · ")}
           </p>
           <h1 className="max-w-3xl text-4xl font-bold leading-tight md:text-5xl">
@@ -27,7 +27,7 @@ export default function Home() {
             GIS layers, reports and code. GitHub stays the central source of truth; we handle the rest.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <LinkButton href="/contribute" variant="secondary" className="!bg-white !text-brand-700">
+            <LinkButton href="/contribute" variant="secondary" className="!bg-white !text-brand-800">
               Submit a contribution
             </LinkButton>
             <Link href="/browse" className="inline-flex items-center rounded-lg border border-white/40 px-4 py-2 text-sm font-medium text-white hover:bg-white/10">
@@ -37,10 +37,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* What it is */}
+      {/* About */}
       <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="text-2xl font-bold text-slate-900">About EASER</h2>
-        <p className="mt-3 max-w-3xl text-slate-600">
+        <h2 className="text-2xl font-bold text-stone-900">About EASER</h2>
+        <p className="mt-3 max-w-3xl text-stone-600">
           EASER is a multi-institutional research initiative spanning public-sector and academic
           organizations including {PARTNERS.join(", ")}. The repository collects computational models,
           scientific datasets, GIS and spatial information, research reports, documentation, scripts and
@@ -50,15 +50,15 @@ export default function Home() {
       </section>
 
       {/* How it works */}
-      <section className="bg-white">
+      <section className="section-alt">
         <div className="mx-auto max-w-6xl px-4 py-16">
-          <h2 className="text-2xl font-bold text-slate-900">How contributing works</h2>
+          <h2 className="text-2xl font-bold text-stone-900">How contributing works</h2>
           <div className="mt-8 grid gap-4 md:grid-cols-5">
             {steps.map((s) => (
               <Card key={s.n} className="p-5">
-                <div className="grid h-9 w-9 place-items-center rounded-full bg-brand-100 font-bold text-brand-700">{s.n}</div>
-                <h3 className="mt-3 font-semibold text-slate-900">{s.t}</h3>
-                <p className="mt-1 text-sm text-slate-600">{s.d}</p>
+                <div className="grid h-9 w-9 place-items-center rounded-full bg-brand-200 font-bold text-brand-800">{s.n}</div>
+                <h3 className="mt-3 font-semibold text-stone-900">{s.t}</h3>
+                <p className="mt-1 text-sm text-stone-600">{s.d}</p>
               </Card>
             ))}
           </div>
@@ -67,17 +67,17 @@ export default function Home() {
 
       {/* Categories */}
       <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="text-2xl font-bold text-slate-900">What you can contribute</h2>
+        <h2 className="text-2xl font-bold text-stone-900">What you can contribute</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {CATEGORIES.map((c) => (
             <Card key={c.value} className="p-5">
-              <h3 className="font-semibold text-brand-700">{c.label}</h3>
-              <p className="mt-1 text-sm text-slate-600">{c.description}</p>
+              <h3 className="font-semibold text-brand-800">{c.label}</h3>
+              <p className="mt-1 text-sm text-stone-600">{c.description}</p>
             </Card>
           ))}
         </div>
-        <div className="mt-10 rounded-xl bg-brand-50 p-6 text-center">
-          <p className="text-lg font-medium text-brand-800">Ready to add your work to EASER?</p>
+        <div className="mt-10 rounded-xl bg-brand-100 p-6 text-center">
+          <p className="text-lg font-medium text-brand-900">Ready to add your work to EASER?</p>
           <div className="mt-4"><LinkButton href="/contribute">Start a contribution</LinkButton></div>
         </div>
       </section>

@@ -17,16 +17,16 @@ export default function DocsPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12">
-      <h1 className="text-3xl font-bold text-slate-900">Documentation</h1>
-      <p className="mt-2 text-slate-600">
+      <h1 className="text-3xl font-bold text-stone-900">Documentation</h1>
+      <p className="mt-2 text-stone-600">
         Auto-generated, curator-reviewed documentation for every published contribution. Each entry links
         to its README in the GitHub repository.
       </p>
 
       {loading ? (
-        <p className="mt-8 text-slate-500">Loading…</p>
+        <p className="mt-8 text-stone-500">Loading…</p>
       ) : !items.length ? (
-        <Card className="mt-8 p-6 text-sm text-slate-600">
+        <Card className="mt-8 p-6 text-sm text-stone-600">
           No published documentation yet. Once contributions are approved, their generated READMEs appear
           here and are committed to <code>easer_repository</code>.
         </Card>
@@ -38,8 +38,8 @@ export default function DocsPage() {
                 <a href={r.githubUrl} target="_blank" rel="noreferrer" className="font-medium text-brand-700 hover:underline">{r.title}</a>
                 <Badge color="blue">{r.category}</Badge>
               </div>
-              <p className="mt-1 text-sm text-slate-600">{r.description}</p>
-              <p className="mt-1 text-xs text-slate-500">{r.author} · {r.affiliation} · <code>{r.repoPath}</code></p>
+              <p className="mt-1 text-sm text-stone-600">{r.description}</p>
+              <p className="mt-1 text-xs text-stone-500">{r.author} · {r.affiliation} · <code>{r.repoPath}</code></p>
               {r.keywords?.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">{r.keywords.map((k) => <Badge key={k}>{k}</Badge>)}</div>
               )}

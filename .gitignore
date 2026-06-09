@@ -15,4 +15,32 @@ next-env.d.ts
 # Firebase / service accounts
 firebase-service-account.json
 *-firebase-adminsdk-*.json
-*.firebase-adminsdk*.
+*.firebase-adminsdk*.json
+
+# Vercel
+.vercel
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Storage and local uploads
+.storage
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode
+.idea
+
+# Build artifacts
+dist
+build
+# Firebase service-account keys (NEVER commit)
+*adminsdk*.json
+*service-account*.json
+easer-521eb-*.json
