@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Repositorio EASER · Objetivo 4.1.1</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { background:#fff; color:#1a1a1a; font-family:'Raleway',sans-serif; font-weight:400; line-height:1.7; }
+
+  /* ── LANGUAGE MODAL ── */
+  .lang-overlay {
+    position:fixed; inset:0; background:rgba(10,10,10,0.82);
+    z-index:9999; display:flex; align-items:center; justify-content:center;
+    backdrop-filter:blur(4px);
+  }
+  .lang-modal {
+    background:#fff; border-radius:10px; padding:3rem 3.5rem;
+    text-align:center; max-width:440px; width:90%;
+    box-shadow:0 24px 64px rgba(0,0,0,0.25);
+    animation: popIn 0.3s ease both;
+  }
+  @keyframes popIn {
+    from { opacity:0; transform:scale(0.92); }
+    to   { opacity:1; transform:scale(1); }
+  }
+  .lang-modal-logo {
+    font-size:1rem; font-weight:700; color:#1a1a1a;
+    letter-spacing:0.05em; margin-bottom:0.5rem;
+  }
+  .lang-modal-sub {
+    font-size:0.75rem; color:#999; margin-bottom:2rem;
+    letter-spacing:0.08em; text-transform:uppercase;
+  }
+  .lang-modal h2 {
+    font-family:'Merriweather',serif; font-size:1.25rem;
+    font-weight:300; color:#1a1a1a; margin-bottom:0.5rem;
+  }
+  .lang-modal p { font-size:0.82rem; color:#888; margin-bottom:2rem; }
+  .lang-btns { display:flex; gap:1rem; justify-content:center; }
+  .lang-btn {
+    flex:1; padding:0.9rem 1rem;
+    border:2px solid #e8e8e8; border-radius:8px;
+    background:#fff; cursor:pointer; transition:all 0.2s;
+    font-family:'Raleway',sans-serif; font-size:0.88rem;
+    font-weight:600; color:#1a1a1a; display:flex;
+    flex-direction:column; align-items:center; gap:0.4rem;
+  }
+  .lang-btn:hover { border-color:#c0392b; color:#c0392b; }
+  .lang-btn .flag { font-size:1.75rem; }
+  .lang-btn .lang-label { font-size:0.78rem; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background:#1a1a1a; color:#aaa; font-size:0.72rem;
+    padding:0.5rem 2.5rem; display:flex; gap:3rem;
+    align-items:center; justify-content:center; letter-spacing:0.05em;
+  }
+  .topbar span { display:flex; align-items:center; gap:0.4rem; }
+
+  /* ── NAV ── */
+  nav {
+    position:sticky; top:0; z-index:100; background:#fff;
+    border-bottom:1px solid #e8e8e8; padding:0 2.5rem; height:72px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .nav-logo-text { font-size:1.1rem; font-weight:700; letter-spacing:-0.01em; color:#1a1a1a; }
+  .nav-links { display:flex; gap:1.75rem; list-style:none; align-items:center; }
+  .nav-links a { text-decoration:none; font-size:0.82rem; font-weight:500; color:#444; transition:color 0.2s; }
+  .nav-links a:hover { color:#c0392b; }
+  .nav-btn-lang {
+    background:none; border:1px solid #ddd; border-radius:4px;
+    padding:0.35rem 0.75rem; font-size:0.75rem; font-weight:600;
+    cursor:pointer; color:#444; font-family:'Raleway',sans-serif;
+    transition:all 0.2s; letter-spacing:0.05em;
+  }
+  .nav-btn-lang:hover { border-color:#c0392b; color:#c0392b; }
+  .btn-nav {
+    background:#c0392b; color:#fff !important; padding:0.45rem 1.1rem;
+    border-radius:4px; font-size:0.78rem;
+  }
+  .btn-nav:hover { background:#a93226 !important; }
+
+  /* ── HERO ── */
+  .hero { padding:5rem 2.5rem 4rem; max-width:900px; margin:0 auto; }
+  .hero-eyebrow { font-size:0.75rem; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:#c0392b; margin-bottom:1.25rem; }
+  .hero h1 { font-family:'Merriweather',serif; font-size:clamp(1.8rem,3.5vw,2.8rem); font-weight:300; line-height:1.35; color:#1a1a1a; margin-bottom:1.5rem; max-width:760px; }
+  .hero-desc { font-size:1rem; color:#555; max-width:620px; line-height:1.8; margin-bottom:2rem; }
+  .btn-primary { display:inline-block; background:#c0392b; color:#fff; text-decoration:none; padding:0.75rem 1.75rem; font-size:0.82rem; font-weight:600; letter-spacing:0.05em; border-radius:4px; transition:background 0.2s; margin-right:0.75rem; }
+  .btn-primary:hover { background:#a93226; }
+  .btn-secondary { display:inline-block; color:#1a1a1a; text-decoration:none; padding:0.75rem 1.75rem; font-size:0.82rem; font-weight:600; border:1px solid #ccc; border-radius:4px; transition:all 0.2s; }
+  .btn-secondary:hover { border-color:#c0392b; color:#c0392b; }
+
+  /* ── LOGO SLIDER ── */
+  .logos-strip {
+    background:#f8f8f8; border-top:1px solid #e8e8e8;
+    border-bottom:1px solid #e8e8e8; padding:1.25rem 0;
+    position:relative; overflow:hidden;
+  }
+  .logos-track-wrapper { overflow:hidden; width:100%; padding:0 52px; }
+  .logos-track { display:flex; align-items:center; transition:transform 0.4s ease; }
+  .logo-slide {
+    min-width:25%; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    padding:0.75rem 1.5rem; gap:0.5rem; flex-shrink:0;
+  }
+  .logo-slide img {
+    height:52px; object-fit:contain; max-width:160px;
+    filter:grayscale(30%); transition:filter 0.2s;
+  }
+  .logo-slide img:hover { filter:grayscale(0%); }
+  .logo-slide span { font-size:0.62rem; font-weight:600; color:#888; letter-spacing:0.1em; text-transform:uppercase; text-align:center; }
+  .logos-arrow {
+    position:absolute; top:50%; transform:translateY(-50%);
+    background:#fff; border:1px solid #e8e8e8;
+    width:36px; height:36px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; font-size:1rem; color:#444; z-index:10;
+    transition:all 0.2s; box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  }
+  .logos-arrow:hover { border-color:#c0392b; color:#c0392b; }
+  .logos-arrow.left { left:12px; }
+  .logos-arrow.right { right:12px; }
+
+  /* ── SECTIONS ── */
+  .section { padding:4.5rem 2.5rem; }
+  .section-inner { max-width:900px; margin:0 auto; }
+  .section-label { font-size:0.72rem; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:#c0392b; margin-bottom:0.75rem; }
+  .section h2 { font-family:'Merriweather',serif; font-size:clamp(1.4rem,2.5vw,2rem); font-weight:300; color:#1a1a1a; line-height:1.35; margin-bottom:1.25rem; }
+  .section-divider { width:40px; height:3px; background:#c0392b; margin:1.25rem 0 1.75rem; }
+  .section-body { font-size:0.95rem; color:#555; line-height:1.85; max-width:640px; }
+  .section-grey { background:#f8f8f8; }
+  .bullet-list { margin-top:1.75rem; display:flex; flex-direction:column; gap:0.75rem; }
+  .bullet-item { display:flex; align-items:flex-start; gap:0.75rem; font-size:0.9rem; color:#333; line-height:1.6; }
+  .bullet-item::before { content:''; width:6px; height:6px; border-radius:50%; background:#c0392b; margin-top:0.55em; flex-shrink:0; }
+
+  /* ── CIUDADES ── */
+  .ciudades-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.25rem; margin-top:2rem; }
+  .ciudad-card { border:1px solid #e8e8e8; border-radius:6px; overflow:hidden; }
+  .ciudad-img { width:100%; height:180px; object-fit:cover; display:block; }
+  .ciudad-body { padding:1.25rem; border-top:3px solid #c0392b; }
+  .ciudad-num { font-family:'Merriweather',serif; font-size:1.5rem; font-weight:300; color:#e0e0e0; line-height:1; margin-bottom:0.3rem; }
+  .ciudad-name { font-size:1rem; font-weight:700; color:#1a1a1a; margin-bottom:0.25rem; }
+  .ciudad-desc { font-size:0.78rem; color:#777; line-height:1.6; }
+
+  /* ── REPO CARDS ── */
+  .cards-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.25rem; margin-top:2rem; }
+  .card { border:1px solid #e8e8e8; border-radius:6px; padding:1.75rem; text-decoration:none; color:inherit; transition:all 0.2s; display:flex; flex-direction:column; gap:0.5rem; background:#fff; }
+  .card:hover { border-color:#c0392b; box-shadow:0 4px 16px rgba(0,0,0,0.06); }
+  .card-icon { font-size:1.4rem; margin-bottom:0.25rem; }
+  .card-title { font-size:0.95rem; font-weight:700; color:#1a1a1a; }
+  .card-desc { font-size:0.82rem; color:#666; line-height:1.6; flex:1; }
+  .card-link { font-size:0.75rem; font-weight:600; color:#c0392b; margin-top:0.5rem; }
+
+  /* ── TEAM TABS ── */
+  .tabs-header { display:flex; gap:0; border-bottom:2px solid #e8e8e8; margin-bottom:2rem; margin-top:2rem; }
+  .tab-btn { padding:0.75rem 1.5rem; font-size:0.82rem; font-weight:600; color:#888; background:none; border:none; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all 0.2s; font-family:'Raleway',sans-serif; }
+  .tab-btn.active { color:#c0392b; border-bottom-color:#c0392b; }
+  .tab-btn:hover { color:#c0392b; }
+  .tab-pane { display:none; }
+  .tab-pane.active { display:block; }
+  .team-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:1.5rem; }
+  .team-card { text-align:center; }
+  .team-photo { width:90px; height:90px; border-radius:50%; object-fit:cover; margin:0 auto 0.75rem; display:block; border:2px solid #e8e8e8; }
+  .team-photo-placeholder { width:90px; height:90px; border-radius:50%; background:#f0f0f0; margin:0 auto 0.75rem; display:flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:700; color:#bbb; border:2px solid #e8e8e8; }
+  .team-name { font-size:0.82rem; font-weight:700; color:#1a1a1a; line-height:1.3; margin-bottom:0.2rem; }
+  .team-role { font-size:0.7rem; color:#888; line-height:1.4; }
+  .team-linkedin { font-size:0.68rem; color:#c0392b; text-decoration:none; display:inline-block; margin-top:0.25rem; }
+  .team-linkedin:hover { text-decoration:underline; }
+
+  /* ── DIRECTORIO ── */
+  .directorio-table { width:100%; border-collapse:collapse; font-size:0.83rem; }
+  .directorio-table th { text-align:left; padding:0.6rem 1rem; font-size:0.68rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#888; border-bottom:2px solid #e8e8e8; }
+  .directorio-table td { padding:0.85rem 1rem; border-bottom:1px solid #f0f0f0; vertical-align:top; color:#333; }
+  .directorio-table tr:hover td { background:#fafafa; }
+  .dir-name { font-weight:600; color:#1a1a1a; }
+  .dir-inst { font-size:0.75rem; color:#888; margin-top:0.1rem; }
+  .dir-tag { display:inline-block; font-size:0.62rem; font-weight:600; padding:0.15rem 0.5rem; border-radius:3px; background:#fdecea; color:#c0392b; }
+
+  /* ── DARK BAND ── */
+  .dark-band { background:#1a1a1a; padding:3.5rem 2.5rem; text-align:center; }
+  .dark-band h2 { font-family:'Merriweather',serif; font-size:1.6rem; font-weight:300; color:#fff; margin-bottom:0.75rem; }
+  .dark-band p { font-size:0.88rem; color:#aaa; margin-bottom:2rem; }
+  .btn-outline-white { display:inline-block; color:#fff; text-decoration:none; padding:0.75rem 1.75rem; font-size:0.82rem; font-weight:600; border:1px solid rgba(255,255,255,0.3); border-radius:4px; transition:all 0.2s; margin:0 0.4rem; }
+  .btn-outline-white:hover { border-color:#fff; }
+  .dark-band .btn-primary { margin:0 0.4rem; }
+
+  /* ── FOOTER ── */
+  footer { background:#111; color:#888; padding:2.5rem; display:grid; grid-template-columns:1fr 1fr 1fr; gap:2rem; font-size:0.78rem; }
+  .footer-col h4 { color:#fff; font-size:0.78rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.75rem; }
+  .footer-col p, .footer-col a { display:block; color:#888; text-decoration:none; line-height:2; transition:color 0.2s; }
+  .footer-col a:hover { color:#c0392b; }
+  .footer-bottom { background:#0a0a0a; text-align:center; padding:1rem; font-size:0.72rem; color:#555; }
+</style>
+</head>
+<body>
+
+<!-- LANGUAGE MODAL -->
+<div class="lang-overlay" id="langOverlay">
+  <div class="lang-modal">
+    <div class="lang-modal-logo">EASER · Repositorio</div>
+    <div class="lang-modal-sub">Objetivo 4.1.1 · Proyecto Anillo ANID</div>
+    <h2>Select your language</h2>
+    <p>Selecciona el idioma / Please select a language</p>
+    <div class="lang-btns">
+      <button class="lang-btn" onclick="setLang('es')">
+        <span class="flag">🇨🇱</span>
+        <span class="lang-label">Español</span>
+      </button>
+      <button class="lang-btn" onclick="setLang('en')">
+        <span class="flag">🇺🇸</span>
+        <span class="lang-label">English</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span>📍 Concepción, Chile</span>
+  <span>📧 contacto@proyectoeaser.cl</span>
+  <span>📸 @proyecto.easer</span>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo-text">EASER · Repositorio</div>
+  <ul class="nav-links">
+    <li><a href="#sobre" data-es="El Proyecto" data-en="About">El Proyecto</a></li>
+    <li><a href="#repositorio" data-es="Repositorio" data-en="Repository">Repositorio</a></li>
+    <li><a href="#equipo" data-es="Equipo" data-en="Team">Equipo</a></li>
+    <li><a href="https://www.proyectoeaser.cl" target="_blank" data-es="Sitio oficial" data-en="Official site">Sitio oficial</a></li>
+    <li><button class="nav-btn-lang" onclick="toggleLangModal()">🌐 ES / EN</button></li>
+    <li><a href="https://github.com/glxriap-7295/easer_repository" target="_blank" class="btn-nav" data-es="Ver en GitHub →" data-en="View on GitHub →">Ver en GitHub →</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow" data-es="Proyecto Anillo ANID · Objetivo 4.1.1" data-en="ANID Ring Project · Objective 4.1.1">Proyecto Anillo ANID · Objetivo 4.1.1</div>
+  <h1 data-es="Repositorio de herramientas computacionales para la <strong>evaluación del riesgo sísmico</strong> dependiente del tiempo" data-en="Repository of computational tools for <strong>time-dependent seismic risk</strong> assessment">Repositorio de herramientas computacionales para la <strong>evaluación del riesgo sísmico</strong> dependiente del tiempo</h1>
+  <p class="hero-desc" data-es="Aquí encontrarás todos los scripts, datos, modelos y documentación del Objetivo 4.1.1 del proyecto EASER. Organizado para que cualquier persona del equipo pueda acceder y utilizar las herramientas, sin necesidad de experiencia avanzada en programación." data-en="Here you will find all scripts, data, models and documentation for Objective 4.1.1 of the EASER project. Organized so that any team member can access and use the tools, without requiring advanced programming experience.">Aquí encontrarás todos los scripts, datos, modelos y documentación del Objetivo 4.1.1 del proyecto EASER. Organizado para que cualquier persona del equipo pueda acceder y utilizar las herramientas, sin necesidad de experiencia avanzada en programación.</p>
+  <a class="btn-primary" href="https://github.com/glxriap-7295/easer_repository" target="_blank" data-es="Acceder al repositorio" data-en="Access the repository">Acceder al repositorio</a>
+  <a class="btn-secondary" href="#repositorio" data-es="¿Qué hay aquí?" data-en="What's inside?">¿Qué hay aquí?</a>
+</div>
+
+<!-- LOGO SLIDER -->
+<div class="logos-strip">
+  <button class="logos-arrow left" onclick="slideLogos(-1)">&#8592;</button>
+  <div class="logos-track-wrapper">
+    <div class="logos-track" id="logosTrack">
+      <div class="logo-slide">
+        <img src="udec_nobg.png" alt="Universidad de Concepción">
+        <span>Universidad de Concepción</span>
+      </div>
+      <div class="logo-slide">
+        <img src="https://www.proyectoeaser.cl/wp-content/uploads/2024/10/escudo-uchile-horizontal-color-1024x438.jpg" alt="Universidad de Chile">
+        <span>Universidad de Chile</span>
+      </div>
+      <div class="logo-slide">
+        <img src="https://www.proyectoeaser.cl/wp-content/uploads/2024/10/UNIVERSIDAD-CATOLICA-PNG-1024x590.png" alt="PUC">
+        <span>P. U. Católica de Chile</span>
+      </div>
+      <div class="logo-slide">
+        <img src="senapred.png" alt="SENAPRED">
+        <span>SENAPRED</span>
+      </div>
+      <div class="logo-slide">
+        <img src="anid.png" alt="ANID">
+        <span>ANID</span>
+      </div>
+    </div>
+  </div>
+  <button class="logos-arrow right" onclick="slideLogos(1)">&#8594;</button>
+</div>
+
+<!-- SOBRE -->
+<div class="section" id="sobre">
+  <div class="section-inner">
+    <div class="section-label" data-es="Sobre el proyecto" data-en="About the project">Sobre el proyecto</div>
+    <h2 data-es="EASER: Evolution Assessment of Seismic Risk" data-en="EASER: Evolution Assessment of Seismic Risk">EASER: Evolution Assessment of Seismic Risk</h2>
+    <div class="section-divider"></div>
+    <p class="section-body" data-es="EASER es un proyecto Anillo ANID que desarrolla metodologías y herramientas computacionales para evaluar el riesgo sísmico incorporando la variación temporal de amenaza, vulnerabilidad estructural y exposición urbana en el contexto sismotectónico andino. Este repositorio corresponde al Objetivo 4.1.1: curar y subir a repositorios públicos las herramientas computacionales desarrolladas por el proyecto." data-en="EASER is an ANID Ring project that develops methodologies and computational tools to evaluate seismic risk incorporating the temporal variation of hazard, structural vulnerability and urban exposure in the Andean seismotectonic context. This repository covers Objective 4.1.1: curating and uploading to public repositories the computational tools developed by the project.">EASER es un proyecto Anillo ANID que desarrolla metodologías y herramientas computacionales para evaluar el riesgo sísmico incorporando la variación temporal de amenaza, vulnerabilidad estructural y exposición urbana en el contexto sismotectónico andino. Este repositorio corresponde al Objetivo 4.1.1: curar y subir a repositorios públicos las herramientas computacionales desarrolladas por el proyecto.</p>
+    <div class="bullet-list">
+      <div class="bullet-item" data-es="RL1 · Evolución temporal de la amenaza sísmica" data-en="RL1 · Temporal evolution of seismic hazard">RL1 · Evolución temporal de la amenaza sísmica</div>
+      <div class="bullet-item" data-es="RL2 · Evolución de la vulnerabilidad estructural" data-en="RL2 · Evolution of structural vulnerability">RL2 · Evolución de la vulnerabilidad estructural</div>
+      <div class="bullet-item" data-es="RL3 · Evolución temporal de la exposición urbana" data-en="RL3 · Temporal evolution of urban exposure">RL3 · Evolución temporal de la exposición urbana</div>
+      <div class="bullet-item" data-es="RL4 · Desarrollo de herramientas computacionales (este repositorio)" data-en="RL4 · Development of computational tools (this repository)">RL4 · Desarrollo de herramientas computacionales (este repositorio)</div>
+    </div>
+  </div>
+</div>
+
+<!-- CIUDADES -->
+<div class="section section-grey">
+  <div class="section-inner">
+    <div class="section-label" data-es="Ciudades de estudio" data-en="Case study cities">Ciudades de estudio</div>
+    <h2 data-es="Casos de aplicación" data-en="Application cases">Casos de aplicación</h2>
+    <div class="section-divider"></div>
+    <p class="section-body" data-es="Las herramientas de este repositorio están diseñadas y validadas para tres ciudades representativas de Chile." data-en="The tools in this repository are designed and validated for three representative Chilean cities.">Las herramientas de este repositorio están diseñadas y validadas para tres ciudades representativas de Chile.</p>
+    <div class="ciudades-grid">
+      <div class="ciudad-card">
+        <img class="ciudad-img" src="santiago.jpg" alt="Santiago">
+        <div class="ciudad-body">
+          <div class="ciudad-num">01</div>
+          <div class="ciudad-name">Santiago</div>
+          <div class="ciudad-desc" data-es="Capital y ciudad más poblada de Chile. Región Metropolitana. Falla San Ramón como amenaza local adicional." data-en="Capital and most populated city of Chile. Metropolitan Region. San Ramón Fault as an additional local hazard.">Capital y ciudad más poblada de Chile. Región Metropolitana. Falla San Ramón como amenaza local adicional.</div>
+        </div>
+      </div>
+      <div class="ciudad-card">
+        <img class="ciudad-img" src="vina.jpg" alt="Viña del Mar">
+        <div class="ciudad-body">
+          <div class="ciudad-num">02</div>
+          <div class="ciudad-name">Viña del Mar</div>
+          <div class="ciudad-desc" data-es="Región de Valparaíso. Ciudad costera con alta exposición y antecedentes del terremoto de 1985." data-en="Valparaíso Region. Coastal city with high exposure and history of the 1985 earthquake.">Región de Valparaíso. Ciudad costera con alta exposición y antecedentes del terremoto de 1985.</div>
+        </div>
+      </div>
+      <div class="ciudad-card">
+        <img class="ciudad-img" src="concepcion.jpg" alt="Concepción">
+        <div class="ciudad-body">
+          <div class="ciudad-num">03</div>
+          <div class="ciudad-name">Concepción</div>
+          <div class="ciudad-desc" data-es="Región del Biobío. Sede principal del proyecto. Observatorio de respuesta de sitio ORSCA disponible." data-en="Biobío Region. Main project headquarters. ORSCA site response observatory available.">Región del Biobío. Sede principal del proyecto. Observatorio de respuesta de sitio ORSCA disponible.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REPOSITORIO -->
+<div class="section" id="repositorio">
+  <div class="section-inner">
+    <div class="section-label" data-es="Contenido" data-en="Contents">Contenido</div>
+    <h2 data-es="¿Qué hay en este repositorio?" data-en="What's in this repository?">¿Qué hay en este repositorio?</h2>
+    <div class="section-divider"></div>
+    <p class="section-body" data-es="Accede directamente a cada carpeta. No necesitas saber usar GitHub — simplemente haz clic en lo que necesitas." data-en="Access each folder directly. You don't need to know GitHub — just click on what you need.">Accede directamente a cada carpeta. No necesitas saber usar GitHub — simplemente haz clic en lo que necesitas.</p>
+    <div class="cards-grid">
+      <a class="card" href="https://github.com/glxriap-7295/easer_repository/tree/main/scripts" target="_blank">
+        <div class="card-icon">💻</div>
+        <div class="card-title" data-es="Scripts y Código" data-en="Scripts & Code">Scripts y Código</div>
+        <div class="card-desc" data-es="Herramientas computacionales curadas: módulos de amenaza, vulnerabilidad y exposición. Código estandarizado, documentado y listo para usar." data-en="Curated computational tools: hazard, vulnerability and exposure modules. Standardized, documented and ready-to-use code.">Herramientas computacionales curadas: módulos de amenaza, vulnerabilidad y exposición. Código estandarizado, documentado y listo para usar.</div>
+        <div class="card-link" data-es="Ver carpeta →" data-en="View folder →">Ver carpeta →</div>
+      </a>
+      <a class="card" href="https://github.com/glxriap-7295/easer_repository/tree/main/datos" target="_blank">
+        <div class="card-icon">🗂️</div>
+        <div class="card-title" data-es="Datos" data-en="Data">Datos</div>
+        <div class="card-desc" data-es="Datos de entrada y salida organizados por ciudad de estudio: Santiago, Viña del Mar y Concepción." data-en="Input and output data organized by case study city: Santiago, Viña del Mar and Concepción.">Datos de entrada y salida organizados por ciudad de estudio.</div>
+        <div class="card-link" data-es="Ver carpeta →" data-en="View folder →">Ver carpeta →</div>
+      </a>
+      <a class="card" href="https://github.com/glxriap-7295/easer_repository/tree/main/docs" target="_blank">
+        <div class="card-icon">📖</div>
+        <div class="card-title" data-es="Documentación" data-en="Documentation">Documentación</div>
+        <div class="card-desc" data-es="Guías de instalación, protocolos de uso, instrucciones paso a paso y referencias técnicas del proyecto." data-en="Installation guides, usage protocols, step-by-step instructions and technical references.">Guías de instalación, protocolos de uso e instrucciones paso a paso.</div>
+        <div class="card-link" data-es="Ver carpeta →" data-en="View folder →">Ver carpeta →</div>
+      </a>
+      <a class="card" href="https://github.com/glxriap-7295/easer_repository/tree/main/informes" target="_blank">
+        <div class="card-icon">📊</div>
+        <div class="card-title" data-es="Informes" data-en="Reports">Informes</div>
+        <div class="card-desc" data-es="Reportes de avance, entregables y resultados del Objetivo 4.1.1 organizados cronológicamente." data-en="Progress reports, deliverables and results of Objective 4.1.1 organized chronologically.">Reportes de avance y entregables del Objetivo 4.1.1.</div>
+        <div class="card-link" data-es="Ver carpeta →" data-en="View folder →">Ver carpeta →</div>
+      </a>
+      <a class="card" href="https://github.com/glxriap-7295/easer_repository/tree/main/recursos" target="_blank">
+        <div class="card-icon">🔗</div>
+        <div class="card-title" data-es="Recursos" data-en="Resources">Recursos</div>
+        <div class="card-desc" data-es="Bibliografía, plantillas, materiales de apoyo y recursos externos relevantes para el equipo." data-en="Bibliography, templates, support materials and relevant external resources for the team.">Bibliografía, plantillas y materiales de apoyo.</div>
+        <div class="card-link" data-es="Ver carpeta →" data-en="View folder →">Ver carpeta →</div>
+      </a>
+      <a class="card" href="https://github.com/glxriap-7295/easer_repository/blob/main/README.md" target="_blank">
+        <div class="card-icon">📄</div>
+        <div class="card-title">README</div>
+        <div class="card-desc" data-es="Descripción completa del repositorio con instrucciones de instalación y cómo ejecutar los casos de estudio." data-en="Full repository description with installation instructions and how to run the case studies.">Descripción completa e instrucciones de instalación.</div>
+        <div class="card-link" data-es="Ver archivo →" data-en="View file →">Ver archivo →</div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- EQUIPO -->
+<div class="section section-grey" id="equipo">
+  <div class="section-inner">
+    <div class="section-label" data-es="Personas" data-en="People">Personas</div>
+    <h2 data-es="Nuestro equipo" data-en="Our team">Nuestro equipo</h2>
+    <div class="section-divider"></div>
+    <div class="tabs-header">
+      <button class="tab-btn active" onclick="switchTab('investigadores',this)" data-es="Investigadores" data-en="Researchers">Investigadores</button>
+      <button class="tab-btn" onclick="switchTab('directorio',this)" data-es="Directorio completo" data-en="Full directory">Directorio completo</button>
+    </div>
+
+    <div class="tab-pane active" id="tab-investigadores">
+      <div class="team-grid">
+        <div class="team-card">
+          <img class="team-photo" src="https://www.proyectoeaser.cl/wp-content/uploads/2024/10/Foto-1-Nota-Calidad-del-suelo-en-Chile-Gonzalo-Montalva-removebg-preview.png" alt="Gonzalo Montalva" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="team-photo-placeholder" style="display:none">GM</div>
+          <div class="team-name">Gonzalo Montalva</div>
+          <div class="team-role" data-es="Director · UdeC" data-en="Director · UdeC">Director · UdeC</div>
+          <a class="team-linkedin" href="https://cl.linkedin.com/in/gonzalo-montalva-30298327" target="_blank">LinkedIn →</a>
+        </div>
+        <div class="team-card">
+          <img class="team-photo" src="https://www.proyectoeaser.cl/wp-content/uploads/2024/10/6-removebg-preview.png" alt="Sebastián Calderón" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="team-photo-placeholder" style="display:none">SC</div>
+          <div class="team-name">Sebastián Calderón</div>
+          <div class="team-role" data-es="Subdirector · UdeC" data-en="Deputy Director · UdeC">Subdirector · UdeC</div>
+        </div>
+        <div class="team-card">
+          <img class="team-photo" src="https://www.proyectoeaser.cl/wp-content/uploads/2024/10/Rosita_Junemann2-removebg-preview.png" alt="Rosita Jünemann" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="team-photo-placeholder" style="display:none">RJ</div>
+          <div class="team-name">Rosita Jünemann</div>
+          <div class="team-role" data-es="Investigadora PI · PUC" data-en="Principal Investigator · PUC">Investigadora PI · PUC</div>
+          <a class="team-linkedin" href="https://cl.linkedin.com/in/rosita-junemann-b629654" target="_blank">LinkedIn →</a>
+        </div>
+        <div class="team-card">
+          <img class="team-photo" src="https://www.proyectoeaser.cl/wp-content/uploads/2024/10/felipe-leyton-removebg-preview.png" alt="Felipe Leyton" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="team-photo-placeholder" style="display:none">FL</div>
+          <div class="team-name">Felipe Leyton</div>
+          <div class="team-role" data-es="Investigador PI · UChile" data-en="Principal Investigator · UChile">Investigador PI · UChile</div>
+        </div>
+        <div class="team-card">
+          <img class="team-photo" src="https://www.proyectoeaser.cl/wp-content/uploads/2024/10/pablo_heresi_anillo_anid_400x600-compressed-removebg-preview.png" alt="Pablo Heresi" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="team-photo-placeholder" style="display:none">PH</div>
+          <div class="team-name">Pablo Heresi</div>
+          <div class="team-role" data-es="Investigador PI · UChile" data-en="Principal Investigator · UChile">Investigador PI · UChile</div>
+          <a class="team-linkedin" href="https://cl.linkedin.com/in/pablo-heresi-venegas-aba121a0" target="_blank">LinkedIn →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="tab-directorio">
+      <table class="directorio-table">
+        <thead>
+          <tr>
+            <th data-es="Nombre" data-en="Name">Nombre</th>
+            <th data-es="Rol" data-en="Role">Rol</th>
+            <th data-es="Institución" data-en="Institution">Institución</th>
+            <th data-es="Línea" data-en="Line">Línea</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><div class="dir-name">Gonzalo Montalva</div></td><td><span class="dir-tag" data-es="Director" data-en="Director">Director</span></td><td><div class="dir-inst">Universidad de Concepción</div></td><td>RL1, RL3</td></tr>
+          <tr><td><div class="dir-name">Sebastián Calderón</div></td><td><span class="dir-tag" data-es="Subdirector" data-en="Deputy Director">Subdirector</span></td><td><div class="dir-inst">Universidad de Concepción</div></td><td>RL2, RL3</td></tr>
+          <tr><td><div class="dir-name">Rosita Jünemann</div></td><td><span class="dir-tag">PI</span></td><td><div class="dir-inst">P. Universidad Católica de Chile</div></td><td>RL2, RL4</td></tr>
+          <tr><td><div class="dir-name">Felipe Leyton</div></td><td><span class="dir-tag">PI</span></td><td><div class="dir-inst">Universidad de Chile</div></td><td>RL1, RL4</td></tr>
+          <tr><td><div class="dir-name">Pablo Heresi</div></td><td><span class="dir-tag">PI</span></td><td><div class="dir-inst">Universidad de Chile</div></td><td>RL3, RL4</td></tr>
+          <tr><td><div class="dir-name">Jorge Crempien</div></td><td><span data-es="Investigador Asociado" data-en="Associate Researcher">Investigador Asociado</span></td><td><div class="dir-inst">P. Universidad Católica de Chile</div></td><td>RL1</td></tr>
+          <tr><td><div class="dir-name">Felipe Orellana</div></td><td><span>Postdoc</span></td><td><div class="dir-inst">Universidad de Concepción</div></td><td>RL3</td></tr>
+          <tr><td><div class="dir-name">Catalina Cabello</div></td><td><span data-es="Estudiante PhD" data-en="PhD Student">Estudiante PhD</span></td><td><div class="dir-inst">—</div></td><td>RL2</td></tr>
+          <tr><td><div class="dir-name">Nicolás Bastías</div></td><td><span data-es="Estudiante PhD" data-en="PhD Student">Estudiante PhD</span></td><td><div class="dir-inst">Universidad de Concepción</div></td><td>RL4</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- DARK BAND -->
+<div class="dark-band">
+  <h2 data-es="Acceder al repositorio completo" data-en="Access the full repository">Acceder al repositorio completo</h2>
+  <p data-es="Todo el código, datos y documentación disponibles en GitHub · Pasantía Jun–Jul 2026" data-en="All code, data and documentation available on GitHub · Internship Jun–Jul 2026">Todo el código, datos y documentación disponibles en GitHub · Pasantía Jun–Jul 2026</p>
+  <a class="btn-primary" href="https://github.com/glxriap-7295/easer_repository" target="_blank" data-es="Ver en GitHub →" data-en="View on GitHub →">Ver en GitHub →</a>
+  <a class="btn-outline-white" href="https://www.proyectoeaser.cl" target="_blank" data-es="Sitio oficial EASER" data-en="EASER official site">Sitio oficial EASER</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-col">
+    <h4>EASER · Repositorio</h4>
+    <p data-es="Objetivo 4.1.1 · Pasantía Jun–Jul 2026" data-en="Objective 4.1.1 · Internship Jun–Jul 2026">Objetivo 4.1.1 · Pasantía Jun–Jul 2026</p>
+    <p>Proyecto Anillo ANID</p>
+  </div>
+  <div class="footer-col">
+    <h4 data-es="Navegación" data-en="Navigation">Navegación</h4>
+    <a href="#sobre" data-es="El Proyecto" data-en="About">El Proyecto</a>
+    <a href="#repositorio" data-es="Repositorio" data-en="Repository">Repositorio</a>
+    <a href="#equipo" data-es="Equipo" data-en="Team">Equipo</a>
+  </div>
+  <div class="footer-col">
+    <h4 data-es="Contacto" data-en="Contact">Contacto</h4>
+    <a href="mailto:contacto@proyectoeaser.cl">contacto@proyectoeaser.cl</a>
+    <a href="https://www.proyectoeaser.cl" target="_blank">proyectoeaser.cl</a>
+    <a href="https://www.instagram.com/proyecto.easer/" target="_blank">@proyecto.easer</a>
+  </div>
+</footer>
+<div class="footer-bottom">Copyright © 2026 · Proyecto EASER · Universidad de Concepción</div>
+
+<script>
+  let currentLang = 'es';
+
+  function setLang(lang) {
+    currentLang = lang;
+    document.getElementById('langOverlay').style.display = 'none';
+    applyLang(lang);
+    localStorage.setItem('easerLang', lang);
+  }
+
+  function toggleLangModal() {
+    const overlay = document.getElementById('langOverlay');
+    overlay.style.display = overlay.style.display === 'none' ? 'flex' : 'none';
+  }
+
+  function applyLang(lang) {
+    document.querySelectorAll('[data-es]').forEach(el => {
+      const text = el.getAttribute('data-' + lang);
+      if (text) el.innerHTML = text;
+    });
+    document.documentElement.lang = lang;
+  }
+
+  // Check saved preference
+  const saved = localStorage.getItem('easerLang');
+  if (saved) {
+    setLang(saved);
+  }
+
+  // Logo slider
+  let logoPos = 0;
+  function slideLogos(dir) {
+    const track = document.getElementById('logosTrack');
+    const slides = track.querySelectorAll('.logo-slide');
+    const slideWidth = slides[0].offsetWidth;
+    const max = slides.length - 4;
+    logoPos = Math.max(0, Math.min(max, logoPos + dir));
+    track.style.transform = `translateX(-${logoPos * slideWidth}px)`;
+  }
+
+  // Tabs
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+</script>
+</body>
+</html>
