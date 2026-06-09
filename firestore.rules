@@ -32,6 +32,14 @@ service cloud.firestore {
       allow update, delete: if isCurator();
     }
 
+    // Projects (Phase 3+). Server (Admin SDK) is the only writer; reads are
+    // limited to the owner and curators/admins. The public never reads drafts.
+    match /projects/{id} {
+      allow read: if isCurator() ||
+        (isSignedIn() && resource.data.ownerUid == request.auth.uid);
+      allow write: if false; // server-only via Admin SDK
+    }
+
     // Public registry of APPROVED contributions (denormalised, read-only).
     match /registry/{id} {
       allow read: if true;

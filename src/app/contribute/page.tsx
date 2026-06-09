@@ -1,16 +1,27 @@
-import { ContributionWizard } from "@/components/contribute/ContributionWizard";
+"use client";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { ProjectWizard } from "@/components/project/ProjectWizard";
 
-export const metadata = { title: "Contribute · EASER Data Hub" };
+function ContributeInner() {
+  const params = useSearchParams();
+  const draft = params.get("draft") || undefined;
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-12">
+      <h1 className="text-3xl font-bold text-stone-900">{draft ? "Edit project" : "Contribute a project"}</h1>
+      <p className="mt-2 text-stone-600">
+        One project, many files. Add your authors and institutions, upload your files, and submit —
+        a curator reviews everything and the platform writes the documentation. No Git required.
+      </p>
+      <div className="mt-8"><ProjectWizard projectId={draft} /></div>
+    </div>
+  );
+}
 
 export default function ContributePage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="text-3xl font-bold text-stone-900">Contribute to EASER</h1>
-      <p className="mt-2 text-stone-600">
-        Share your research artifact in a few steps. You don't need to know Git — we generate the
-        documentation and a curator publishes it to the repository.
-      </p>
-      <div className="mt-8"><ContributionWizard /></div>
-    </div>
+    <Suspense fallback={<div className="mx-auto max-w-3xl px-4 py-12 text-stone-500">Loading…</div>}>
+      <ContributeInner />
+    </Suspense>
   );
 }

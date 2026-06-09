@@ -65,7 +65,7 @@ export function UserMenu() {
           <nav className="py-1 text-sm">
             <Item href="/dashboard" onClick={() => setOpen(false)}>My Dashboard</Item>
             <Item href="/profile" onClick={() => setOpen(false)}>Profile</Item>
-            {isCurator && <Item href="/admin" onClick={() => setOpen(false)}>Review Queue</Item>}
+            {isCurator && <Item href="/admin/projects" onClick={() => setOpen(false)}>Review Queue</Item>}
             {isAdmin && <Item href="/admin/users" onClick={() => setOpen(false)}>User Management</Item>}
             <button onClick={doLogout} className="block w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-100" role="menuitem">Logout</button>
           </nav>
