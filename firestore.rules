@@ -1,0 +1,42 @@
+rules_version = '2';
+// EASER Research Data Hub — Firestore security rules.
+// Writes that mutate official state go through server-side API routes using the
+// Admin SDK (which bypasses these rules). Client rules below are deliberately
+// conservative: the public can read published docs, authenticated users can
+// create submissions, and only admins can read/modify the review pipeline.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    // Contributions: created by anyone (incl. anonymous submitters via API),
+    // readable by admins and by the submitter; only admins update status.
+    match /contributions/{id} {
+      allow read: if isAdmin() ||
+        (isSignedIn() && resource.data.submitter.email == request.auth.token.email);
+      allow create: if true;        // also validated server-side by API + zod
+      allow update, delete: if isAdmin();
+    }
+
+    // Public registry of APPROVED contributions (denormalised, read-only).
+    match /registry/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Audit log — admin read only, server writes via Admin SDK.
+    match /audit/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // User profiles / contributor records.
+    match /contributors/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
