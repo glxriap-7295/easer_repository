@@ -5,45 +5,40 @@ import { Card, Button, Input, Textarea, Select, Field, Badge } from "@/component
 import { CATEGORIES } from "@/lib/constants";
 import { apiPost, apiPatch, apiGet } from "@/lib/client";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useT } from "@/components/i18n/LanguageProvider";
 import type { Author, Institution, UploadedFile, Project } from "@/lib/types";
 
 interface FormState {
   title: string; category: string; description: string; purpose: string;
-  authors: Author[]; institutions: Institution[];
-  contactName: string; contactEmail: string;
+  authors: Author[]; institutions: Institution[]; contactName: string; contactEmail: string;
   dependencies: string; requirements: string; installation: string; execution: string;
-  inputFiles: string; outputFiles: string; notes: string;
-  keywords: string; license: string;
+  inputFiles: string; outputFiles: string; notes: string; keywords: string; license: string;
   files: UploadedFile[];
 }
 
 const blank: FormState = {
   title: "", category: "model", description: "", purpose: "",
-  authors: [{ name: "", email: "", orcid: "" }],
-  institutions: [{ name: "", department: "" }],
+  authors: [{ name: "", email: "", orcid: "" }], institutions: [{ name: "", department: "" }],
   contactName: "", contactEmail: "",
   dependencies: "", requirements: "", installation: "", execution: "",
-  inputFiles: "", outputFiles: "", notes: "", keywords: "", license: "",
-  files: []
+  inputFiles: "", outputFiles: "", notes: "", keywords: "", license: "", files: []
 };
 
 function fromProject(p: Project): FormState {
   return {
-    title: p.title || "", category: p.category || "model",
-    description: p.description || "", purpose: p.purpose || "",
+    title: p.title || "", category: p.category || "model", description: p.description || "", purpose: p.purpose || "",
     authors: p.authors?.length ? p.authors : [{ name: "", email: "", orcid: "" }],
     institutions: p.institutions?.length ? p.institutions : [{ name: "", department: "" }],
     contactName: p.contactName || "", contactEmail: p.contactEmail || "",
-    dependencies: p.dependencies || "", requirements: p.requirements || "",
-    installation: p.installation || "", execution: p.execution || "",
-    inputFiles: p.inputFiles || "", outputFiles: p.outputFiles || "",
-    notes: p.notes || "", keywords: (p.keywords || []).join(", "), license: p.license || "",
-    files: p.files || []
+    dependencies: p.dependencies || "", requirements: p.requirements || "", installation: p.installation || "",
+    execution: p.execution || "", inputFiles: p.inputFiles || "", outputFiles: p.outputFiles || "",
+    notes: p.notes || "", keywords: (p.keywords || []).join(", "), license: p.license || "", files: p.files || []
   };
 }
 
 export function ProjectWizard({ projectId }: { projectId?: string }) {
   const { user, profile, loading } = useAuth();
+  const { t } = useT();
   const router = useRouter();
   const [f, setF] = useState<FormState>(blank);
   const [id, setId] = useState<string | undefined>(projectId);
@@ -53,7 +48,6 @@ export function ProjectWizard({ projectId }: { projectId?: string }) {
   const [dragOver, setDragOver] = useState(false);
   const [loaded, setLoaded] = useState(!projectId);
 
-  // Prefill contact + first author from the signed-in profile (new projects).
   useEffect(() => {
     if (!projectId && profile) {
       setF((s) => ({
@@ -66,7 +60,6 @@ export function ProjectWizard({ projectId }: { projectId?: string }) {
     }
   }, [profile, projectId]);
 
-  // Resume an existing draft.
   useEffect(() => {
     if (!projectId) return;
     apiGet<Project>(`/api/projects/${projectId}`, true)
@@ -94,8 +87,7 @@ export function ProjectWizard({ projectId }: { projectId?: string }) {
   function payload(extra: object = {}) {
     return {
       title: f.title, category: f.category, description: f.description, purpose: f.purpose,
-      authors: f.authors.filter((a) => a.name.trim()),
-      institutions: f.institutions.filter((i) => i.name.trim()),
+      authors: f.authors.filter((a) => a.name.trim()), institutions: f.institutions.filter((i) => i.name.trim()),
       contactName: f.contactName, contactEmail: f.contactEmail,
       dependencies: f.dependencies, requirements: f.requirements, installation: f.installation,
       execution: f.execution, inputFiles: f.inputFiles, outputFiles: f.outputFiles, notes: f.notes,
@@ -110,34 +102,26 @@ export function ProjectWizard({ projectId }: { projectId?: string }) {
     try {
       if (id) { await apiPatch(`/api/projects/${id}`, payload()); }
       else { const r = await apiPost<{ id: string }>("/api/projects", payload({ draft: true }), true); setId(r.id); }
-      setInfo("Draft saved. You can close this and resume later from your dashboard.");
-    } catch (e: any) { setErr(e.message); }
-    finally { setBusy(""); }
+      setInfo(t("contribute.saveDraft") + " ✓");
+    } catch (e: any) { setErr(e.message); } finally { setBusy(""); }
   }
 
   async function submit() {
     setBusy("submit"); setErr(""); setInfo("");
     try {
-      if (id) {
-        await apiPatch(`/api/projects/${id}`, payload());
-        await apiPost(`/api/projects/${id}/submit`, {}, true);
-        router.push("/dashboard?submitted=1");
-      } else {
-        const r = await apiPost<{ id: string }>("/api/projects", payload({ draft: false }), true);
-        router.push("/dashboard?submitted=1");
-      }
-    } catch (e: any) { setErr(e.message); }
-    finally { setBusy(""); }
+      if (id) { await apiPatch(`/api/projects/${id}`, payload()); await apiPost(`/api/projects/${id}/submit`, {}, true); }
+      else { await apiPost("/api/projects", payload({ draft: false }), true); }
+      router.push("/dashboard?submitted=1");
+    } catch (e: any) { setErr(e.message); } finally { setBusy(""); }
   }
 
-  if (loading) return <p className="text-stone-500">Loading…</p>;
+  if (loading) return <p className="text-stone-500">{t("common.loading")}</p>;
   if (!user) return (
     <Card className="p-6 text-sm text-stone-700">
-      Please <a href="/login?next=/contribute" className="text-accent-600 underline">sign in</a> or{" "}
-      <a href="/register" className="text-accent-600 underline">create an account</a> to contribute a project.
+      {t("contribute.signInPrompt")} <a href="/login?next=/contribute" className="text-accent-600 underline">{t("common.signIn")}</a>
     </Card>
   );
-  if (!loaded) return <p className="text-stone-500">Loading draft…</p>;
+  if (!loaded) return <p className="text-stone-500">{t("common.loading")}</p>;
 
   return (
     <div className="space-y-6">
@@ -145,49 +129,48 @@ export function ProjectWizard({ projectId }: { projectId?: string }) {
       {info && <div className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">{info}</div>}
 
       <Card className="p-6">
-        <h2 className="font-serif text-lg font-semibold text-stone-900">Project</h2>
+        <h2 className="font-serif text-lg font-semibold text-stone-900">{t("contribute.project")}</h2>
         <div className="mt-4 grid gap-4">
-          <Field label="Title" required><Input value={f.title} onChange={set("title")} placeholder="Tsunami Hazard Study for Central Chile" /></Field>
-          <Field label="Category" required>
+          <Field label={t("contribute.title")} required><Input value={f.title} onChange={set("title")} /></Field>
+          <Field label={t("contribute.category")} required>
             <Select value={f.category} onChange={set("category")}>
               {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
             </Select>
           </Field>
-          <Field label="Description" required><Textarea rows={3} value={f.description} onChange={set("description")} /></Field>
-          <Field label="Purpose" required><Textarea rows={2} value={f.purpose} onChange={set("purpose")} /></Field>
+          <Field label={t("contribute.description")} required><Textarea rows={3} value={f.description} onChange={set("description")} /></Field>
+          <Field label={t("contribute.purpose")} required><Textarea rows={2} value={f.purpose} onChange={set("purpose")} /></Field>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Keywords" hint="Comma-separated"><Input value={f.keywords} onChange={set("keywords")} placeholder="tsunami, hazard, GIS" /></Field>
-            <Field label="License" hint="Optional"><Input value={f.license} onChange={set("license")} placeholder="CC-BY-4.0" /></Field>
+            <Field label={t("contribute.keywords")}><Input value={f.keywords} onChange={set("keywords")} /></Field>
+            <Field label={t("contribute.license")}><Input value={f.license} onChange={set("license")} /></Field>
           </div>
         </div>
       </Card>
 
       <Card className="p-6">
-        <RepeatableAuthors authors={f.authors} onChange={(authors) => setF({ ...f, authors })} />
+        <Repeatable kind="author" t={t} rows={f.authors} onChange={(authors) => setF({ ...f, authors: authors as Author[] })} />
         <div className="mt-6 border-t border-stone-100 pt-6">
-          <RepeatableInstitutions institutions={f.institutions} onChange={(institutions) => setF({ ...f, institutions })} />
+          <Repeatable kind="institution" t={t} rows={f.institutions} onChange={(institutions) => setF({ ...f, institutions: institutions as Institution[] })} />
         </div>
         <div className="mt-6 grid gap-4 border-t border-stone-100 pt-6 sm:grid-cols-2">
-          <Field label="Contact name" required><Input value={f.contactName} onChange={set("contactName")} /></Field>
-          <Field label="Contact email" required><Input type="email" value={f.contactEmail} onChange={set("contactEmail")} /></Field>
+          <Field label={t("contribute.contactName")} required><Input value={f.contactName} onChange={set("contactName")} /></Field>
+          <Field label={t("contribute.contactEmail")} required><Input type="email" value={f.contactEmail} onChange={set("contactEmail")} /></Field>
         </div>
       </Card>
 
       <Card className="p-6">
-        <h2 className="font-serif text-lg font-semibold text-stone-900">Files</h2>
-        <p className="mt-1 text-sm text-stone-500">Upload all files for this project. Drag and drop or browse. Large files (&gt;5&nbsp;MB) are stored externally and linked.</p>
+        <h2 className="font-serif text-lg font-semibold text-stone-900">{t("contribute.filesSection")}</h2>
         <div
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onDrop={(e) => { e.preventDefault(); setDragOver(false); upload(e.dataTransfer.files); }}
           className={`mt-4 rounded-xl border-2 border-dashed p-8 text-center transition ${dragOver ? "border-brand-500 bg-brand-50" : "border-stone-300"}`}
         >
-          <p className="text-sm text-stone-600">Drag files here, or</p>
+          <p className="text-sm text-stone-600">{t("contribute.dragHint")}</p>
           <label className="mt-2 inline-block cursor-pointer rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800">
-            Browse files
+            {t("contribute.browseFiles")}
             <input type="file" multiple className="hidden" onChange={(e) => upload(e.target.files)} />
           </label>
-          {busy === "upload" && <p className="mt-2 text-sm text-accent-600">Uploading…</p>}
+          {busy === "upload" && <p className="mt-2 text-sm text-accent-600">{t("contribute.uploading")}</p>}
         </div>
         <div className="mt-4 space-y-2">
           {f.files.map((file, i) => (
@@ -195,16 +178,16 @@ export function ProjectWizard({ projectId }: { projectId?: string }) {
               <span className="truncate font-mono">{file.name}</span>
               <span className="flex items-center gap-3">
                 <Badge>{(file.size / 1024).toFixed(1)} KB</Badge>
-                <button className="text-red-500 hover:underline" onClick={() => setF({ ...f, files: f.files.filter((_, j) => j !== i) })}>remove</button>
+                <button className="text-red-500 hover:underline" onClick={() => setF({ ...f, files: f.files.filter((_, j) => j !== i) })}>✕</button>
               </span>
             </div>
           ))}
-          {!f.files.length && <p className="text-sm text-stone-500">No files yet.</p>}
+          {!f.files.length && <p className="text-sm text-stone-500">{t("contribute.noFiles")}</p>}
         </div>
       </Card>
 
       <Card className="p-6">
-        <h2 className="font-serif text-lg font-semibold text-stone-900">Technical details <span className="text-sm font-normal text-stone-400">(optional)</span></h2>
+        <h2 className="font-serif text-lg font-semibold text-stone-900">{t("contribute.technical")} <span className="text-sm font-normal text-stone-400">({t("common.optional")})</span></h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <Field label="Dependencies"><Textarea rows={2} value={f.dependencies} onChange={set("dependencies")} /></Field>
           <Field label="Requirements"><Textarea rows={2} value={f.requirements} onChange={set("requirements")} /></Field>
@@ -217,54 +200,46 @@ export function ProjectWizard({ projectId }: { projectId?: string }) {
       </Card>
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button onClick={submit} disabled={!!busy}>{busy === "submit" ? "Submitting…" : "Submit for review"}</Button>
-        <Button variant="secondary" onClick={saveDraft} disabled={!!busy}>{busy === "draft" ? "Saving…" : "Save draft"}</Button>
-        <span className="text-xs text-stone-500">Nothing is published until a curator approves it.</span>
+        <Button onClick={submit} disabled={!!busy}>{busy === "submit" ? t("contribute.submitting") : t("contribute.submitReview")}</Button>
+        <Button variant="secondary" onClick={saveDraft} disabled={!!busy}>{busy === "draft" ? t("contribute.saving") : t("contribute.saveDraft")}</Button>
+        <span className="text-xs text-stone-500">{t("contribute.publishNote")}</span>
       </div>
     </div>
   );
 }
 
-function RepeatableAuthors({ authors, onChange }: { authors: Author[]; onChange: (a: Author[]) => void }) {
-  const upd = (i: number, k: keyof Author, v: string) => onChange(authors.map((a, j) => j === i ? { ...a, [k]: v } : a));
+function Repeatable({ kind, rows, onChange, t }: {
+  kind: "author" | "institution"; rows: any[]; onChange: (r: any[]) => void; t: (k: string) => string;
+}) {
+  const isAuthor = kind === "author";
+  const title = isAuthor ? t("contribute.authors") : t("contribute.institutions");
+  const addLabel = isAuthor ? t("contribute.addAuthor") : t("contribute.addInstitution");
+  const empty = isAuthor ? { name: "", email: "", orcid: "" } : { name: "", department: "" };
+  const upd = (i: number, k: string, v: string) => onChange(rows.map((r, j) => j === i ? { ...r, [k]: v } : r));
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h2 className="font-serif text-lg font-semibold text-stone-900">Authors</h2>
-        <Button variant="ghost" onClick={() => onChange([...authors, { name: "", email: "", orcid: "" }])}>+ Add author</Button>
+        <h2 className="font-serif text-lg font-semibold text-stone-900">{title}</h2>
+        <Button variant="ghost" onClick={() => onChange([...rows, empty])}>{addLabel}</Button>
       </div>
       <div className="mt-3 space-y-3">
-        {authors.map((a, i) => (
-          <div key={i} className="grid gap-2 rounded-lg border border-stone-200 p-3 sm:grid-cols-3">
-            <Input placeholder="Full name" value={a.name} onChange={(e) => upd(i, "name", e.target.value)} />
-            <Input placeholder="Email (optional)" value={a.email || ""} onChange={(e) => upd(i, "email", e.target.value)} />
-            <div className="flex gap-2">
-              <Input placeholder="ORCID (optional)" value={a.orcid || ""} onChange={(e) => upd(i, "orcid", e.target.value)} />
-              {authors.length > 1 && <button className="text-red-500" onClick={() => onChange(authors.filter((_, j) => j !== i))} aria-label="Remove author">✕</button>}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function RepeatableInstitutions({ institutions, onChange }: { institutions: Institution[]; onChange: (i: Institution[]) => void }) {
-  const upd = (i: number, k: keyof Institution, v: string) => onChange(institutions.map((x, j) => j === i ? { ...x, [k]: v } : x));
-  return (
-    <div>
-      <div className="flex items-center justify-between">
-        <h2 className="font-serif text-lg font-semibold text-stone-900">Institutions</h2>
-        <Button variant="ghost" onClick={() => onChange([...institutions, { name: "", department: "" }])}>+ Add institution</Button>
-      </div>
-      <div className="mt-3 space-y-3">
-        {institutions.map((x, i) => (
-          <div key={i} className="grid gap-2 rounded-lg border border-stone-200 p-3 sm:grid-cols-2">
-            <Input placeholder="Institution" value={x.name} onChange={(e) => upd(i, "name", e.target.value)} />
-            <div className="flex gap-2">
-              <Input placeholder="Department (optional)" value={x.department || ""} onChange={(e) => upd(i, "department", e.target.value)} />
-              {institutions.length > 1 && <button className="text-red-500" onClick={() => onChange(institutions.filter((_, j) => j !== i))} aria-label="Remove institution">✕</button>}
-            </div>
+        {rows.map((r, i) => (
+          <div key={i} className={`grid gap-2 rounded-lg border border-stone-200 p-3 ${isAuthor ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+            <Input placeholder={isAuthor ? "Name" : "Institution"} value={r.name} onChange={(e) => upd(i, "name", e.target.value)} />
+            {isAuthor ? (
+              <>
+                <Input placeholder="Email" value={r.email || ""} onChange={(e) => upd(i, "email", e.target.value)} />
+                <div className="flex gap-2">
+                  <Input placeholder="ORCID" value={r.orcid || ""} onChange={(e) => upd(i, "orcid", e.target.value)} />
+                  {rows.length > 1 && <button className="text-red-500" onClick={() => onChange(rows.filter((_, j) => j !== i))}>✕</button>}
+                </div>
+              </>
+            ) : (
+              <div className="flex gap-2">
+                <Input placeholder="Department" value={r.department || ""} onChange={(e) => upd(i, "department", e.target.value)} />
+                {rows.length > 1 && <button className="text-red-500" onClick={() => onChange(rows.filter((_, j) => j !== i))}>✕</button>}
+              </div>
+            )}
           </div>
         ))}
       </div>

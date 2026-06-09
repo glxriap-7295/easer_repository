@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "./AuthProvider";
 import { ROLE_RANK, ROLE_LABEL } from "@/lib/roles";
+import { useT } from "@/components/i18n/LanguageProvider";
 
 function initials(name: string) {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("") || "U";
@@ -11,6 +12,7 @@ function initials(name: string) {
 
 export function UserMenu() {
   const { user, profile, role, loading, logout } = useAuth();
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -26,8 +28,8 @@ export function UserMenu() {
   if (!user) {
     return (
       <div className="flex items-center gap-2">
-        <Link href="/login" className="rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100">Sign in</Link>
-        <Link href="/register" className="rounded-lg bg-brand-700 px-3 py-2 text-sm font-medium text-white hover:bg-brand-800">Register</Link>
+        <Link href="/login" className="rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100">{t("common.signIn")}</Link>
+        <Link href="/register" className="rounded-lg bg-brand-700 px-3 py-2 text-sm font-medium text-white hover:bg-brand-800">{t("common.register")}</Link>
       </div>
     );
   }
@@ -36,11 +38,7 @@ export function UserMenu() {
   const isCurator = role ? ROLE_RANK[role] >= ROLE_RANK.curator : false;
   const isAdmin = role === "admin";
 
-  async function doLogout() {
-    setOpen(false);
-    await logout();
-    router.push("/");
-  }
+  async function doLogout() { setOpen(false); await logout(); router.push("/"); }
 
   return (
     <div className="relative" ref={ref}>
@@ -63,11 +61,11 @@ export function UserMenu() {
             {role && <span className="mt-1 inline-block rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-800">{ROLE_LABEL[role]}</span>}
           </div>
           <nav className="py-1 text-sm">
-            <Item href="/dashboard" onClick={() => setOpen(false)}>My Dashboard</Item>
-            <Item href="/profile" onClick={() => setOpen(false)}>Profile</Item>
-            {isCurator && <Item href="/admin/projects" onClick={() => setOpen(false)}>Review Queue</Item>}
-            {isAdmin && <Item href="/admin/users" onClick={() => setOpen(false)}>User Management</Item>}
-            <button onClick={doLogout} className="block w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-100" role="menuitem">Logout</button>
+            <Item href="/dashboard" onClick={() => setOpen(false)}>{t("common.dashboard")}</Item>
+            <Item href="/profile" onClick={() => setOpen(false)}>{t("common.profile")}</Item>
+            {isCurator && <Item href="/admin/projects" onClick={() => setOpen(false)}>{t("common.reviewQueue")}</Item>}
+            {isAdmin && <Item href="/admin/users" onClick={() => setOpen(false)}>{t("common.userManagement")}</Item>}
+            <button onClick={doLogout} className="block w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-100" role="menuitem">{t("common.logout")}</button>
           </nav>
         </div>
       )}
@@ -76,7 +74,5 @@ export function UserMenu() {
 }
 
 function Item({ href, children, onClick }: { href: string; children: React.ReactNode; onClick: () => void }) {
-  return (
-    <Link href={href} onClick={onClick} role="menuitem" className="block px-4 py-2 text-stone-700 hover:bg-stone-100">{children}</Link>
-  );
+  return <Link href={href} onClick={onClick} role="menuitem" className="block px-4 py-2 text-stone-700 hover:bg-stone-100">{children}</Link>;
 }
