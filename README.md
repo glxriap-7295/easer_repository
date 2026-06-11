@@ -51,3 +51,5 @@ The full workflow runs locally with an in-memory store, offline template doc gen
 * GitHub repository: https://github.com/glxriap-7295/easer_repository
 * Firebase project: `easer-521eb`
 * Project email: `easer.data@gmail.com`
+
+  Deployment refresh test
