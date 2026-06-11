@@ -40,3 +40,7 @@ Thumbs.db
 # Build artifacts
 dist
 build
+# Firebase service-account keys (NEVER commit)
+*adminsdk*.json
+*service-account*.json
+easer-521eb-*.json

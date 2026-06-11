@@ -1,6 +1,12 @@
 import "server-only";
+import { cookies } from "next/headers";
 import { getAdminApp } from "./firebase/admin";
 import { getAuth } from "firebase-admin/auth";
+
+import { ROLE_RANK, type Role } from "./roles";
+export type { Role } from "./roles";
+
+export const SESSION_COOKIE = "easer_session";
 
 const adminEmails = (process.env.ADMIN_EMAILS || "easer.data@gmail.com")
   .split(",")
@@ -11,46 +17,84 @@ export function isAdminEmail(email?: string | null): boolean {
   return !!email && adminEmails.includes(email.toLowerCase());
 }
 
+/** Role a brand-new user should receive (admins bootstrapped by email). */
+export function bootstrapRole(email?: string | null): Role {
+  return isAdminEmail(email) ? "admin" : "researcher";
+}
+
 export interface AuthedUser {
   uid: string;
   email: string;
+  role: Role;
   isAdmin: boolean;
 }
 
-/**
- * Verify the Firebase ID token from the Authorization header.
- * In dev mode without Admin credentials, an `x-easer-dev-admin: true` header
- * grants admin so the dashboard is demonstrable. This bypass is disabled in
- * production (NODE_ENV === "production").
- */
-export async function getAuthedUser(req: Request): Promise<AuthedUser | null> {
-  const app = getAdminApp();
-  const authz = req.headers.get("authorization") || "";
-  const token = authz.startsWith("Bearer ") ? authz.slice(7) : null;
-
-  if (app && token) {
-    try {
-      const decoded = await getAuth(app).verifyIdToken(token);
-      const email = decoded.email || "";
-      return { uid: decoded.uid, email, isAdmin: isAdminEmail(email) || decoded.admin === true };
-    } catch {
-      return null;
-    }
-  }
-
-  // Dev/demo bypass.
-  if (process.env.NODE_ENV !== "production" && req.headers.get("x-easer-dev-admin") === "true") {
-    return { uid: "dev-admin", email: adminEmails[0] || "dev@easer.local", isAdmin: true };
-  }
-  return null;
+function decodedToUser(decoded: any): AuthedUser {
+  const email = decoded.email || "";
+  let role: Role = (decoded.role as Role) || "researcher";
+  if (isAdminEmail(email)) role = "admin"; // email allowlist always wins
+  return { uid: decoded.uid, email, role, isAdmin: role === "admin" };
 }
 
-export async function requireAdmin(req: Request): Promise<AuthedUser> {
-  const user = await getAuthedUser(req);
-  if (!user || !user.isAdmin) {
-    const err: any = new Error("Forbidden: admin access required");
+/** Verify a Firebase ID token from the Authorization: Bearer header. */
+export async function getAuthedUser(req: Request): Promise<AuthedUser | null> {
+  const app = getAdminApp();
+  if (!app) return null;
+  const authz = req.headers.get("authorization") || "";
+  const token = authz.startsWith("Bearer ") ? authz.slice(7) : null;
+  if (!token) return null;
+  try {
+    return decodedToUser(await getAuth(app).verifyIdToken(token));
+  } catch {
+    return null;
+  }
+}
+
+/** Verify the httpOnly session cookie — used by server components/layouts. */
+export async function getServerUser(): Promise<AuthedUser | null> {
+  const app = getAdminApp();
+  if (!app) return null;
+  const cookie = cookies().get(SESSION_COOKIE)?.value;
+  if (!cookie) return null;
+  try {
+    return decodedToUser(await getAuth(app).verifySessionCookie(cookie, true));
+  } catch {
+    return null;
+  }
+}
+
+/** Resolve the caller from either a bearer token (API) or session cookie. */
+export async function resolveUser(req?: Request): Promise<AuthedUser | null> {
+  if (req) {
+    const viaToken = await getAuthedUser(req);
+    if (viaToken) return viaToken;
+  }
+  return getServerUser();
+}
+
+export function hasRole(user: AuthedUser | null, min: Role): boolean {
+  return !!user && ROLE_RANK[user.role] >= ROLE_RANK[min];
+}
+
+/** Throw 401/403 unless the caller meets the minimum role. */
+export async function requireRole(req: Request, min: Role): Promise<AuthedUser> {
+  const user = await resolveUser(req);
+  if (!user) {
+    const err: any = new Error("Unauthorized: sign in required");
+    err.status = 401;
+    throw err;
+  }
+  if (!hasRole(user, min)) {
+    const err: any = new Error(`Forbidden: ${min} access required`);
     err.status = 403;
     throw err;
   }
   return user;
+}
+
+export async function requireAdmin(req: Request): Promise<AuthedUser> {
+  return requireRole(req, "admin");
+}
+export async function requireCurator(req: Request): Promise<AuthedUser> {
+  return requireRole(req, "curator");
 }

@@ -79,13 +79,13 @@ export function ContributionWizard() {
     return (
       <Card className="p-8 text-center">
         <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-green-100 text-green-700">✓</div>
-        <h2 className="mt-4 text-xl font-bold text-slate-900">Contribution submitted</h2>
-        <p className="mt-2 text-slate-600">
+        <h2 className="mt-4 text-xl font-bold text-stone-900">Contribution submitted</h2>
+        <p className="mt-2 text-stone-600">
           Thank you, {f.name}. Your contribution <strong>“{f.title}”</strong> has been added to the review queue.
           The project curator will generate documentation, review it, and publish it to GitHub.
         </p>
-        <p className="mt-2 text-sm text-slate-500">Reference: <code className="rounded bg-slate-100 px-1">{resultId}</code></p>
-        <p className="mt-2 text-sm text-slate-500">You'll receive an email at {f.email} when it's published.</p>
+        <p className="mt-2 text-sm text-stone-500">Reference: <code className="rounded bg-stone-100 px-1">{resultId}</code></p>
+        <p className="mt-2 text-sm text-stone-500">You'll receive an email at {f.email} when it's published.</p>
         <Button className="mt-6" onClick={() => { setF({ ...empty }); setFiles([]); setResultId(null); setStep(0); }}>
           Submit another
         </Button>
@@ -100,9 +100,9 @@ export function ContributionWizard() {
       <div className="mb-6 flex items-center gap-2">
         {labels.map((l, i) => (
           <div key={l} className="flex flex-1 items-center gap-2">
-            <div className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold ${i <= step ? "bg-brand-600 text-white" : "bg-slate-200 text-slate-500"}`}>{i + 1}</div>
-            <span className={`hidden text-sm sm:block ${i === step ? "font-semibold text-brand-700" : "text-slate-500"}`}>{l}</span>
-            {i < labels.length - 1 && <div className={`h-0.5 flex-1 ${i < step ? "bg-brand-600" : "bg-slate-200"}`} />}
+            <div className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold ${i <= step ? "bg-brand-600 text-white" : "bg-stone-200 text-stone-500"}`}>{i + 1}</div>
+            <span className={`hidden text-sm sm:block ${i === step ? "font-semibold text-brand-700" : "text-stone-500"}`}>{l}</span>
+            {i < labels.length - 1 && <div className={`h-0.5 flex-1 ${i < step ? "bg-brand-600" : "bg-stone-200"}`} />}
           </div>
         ))}
       </div>
@@ -155,7 +155,7 @@ export function ContributionWizard() {
             {uploading && <p className="mt-3 text-sm text-brand-600">Uploading…</p>}
             <div className="mt-4 space-y-2">
               {files.map((file, i) => (
-                <div key={i} className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                <div key={i} className="flex items-center justify-between rounded-lg border border-stone-200 px-3 py-2 text-sm">
                   <span className="font-mono">{file.name}</span>
                   <span className="flex items-center gap-3">
                     <Badge>{(file.size / 1024).toFixed(1)} KB</Badge>
@@ -163,14 +163,14 @@ export function ContributionWizard() {
                   </span>
                 </div>
               ))}
-              {!files.length && <p className="text-sm text-slate-500">No files attached yet (optional).</p>}
+              {!files.length && <p className="text-sm text-stone-500">No files attached yet (optional).</p>}
             </div>
           </div>
         )}
 
         {step === 3 && (
           <div className="space-y-3 text-sm">
-            <h3 className="text-base font-semibold text-slate-900">Review your submission</h3>
+            <h3 className="text-base font-semibold text-stone-900">Review your submission</h3>
             <Row k="Contributor" v={`${f.name} · ${f.affiliation}`} />
             <Row k="Email" v={f.email} />
             <Row k="Title" v={f.title} />
@@ -204,9 +204,9 @@ export function ContributionWizard() {
 
 function Row({ k, v }: { k: string; v: string }) {
   return (
-    <div className="grid grid-cols-3 gap-3 border-b border-slate-100 py-1.5">
-      <span className="font-medium text-slate-500">{k}</span>
-      <span className="col-span-2 text-slate-800">{v}</span>
+    <div className="grid grid-cols-3 gap-3 border-b border-stone-100 py-1.5">
+      <span className="font-medium text-stone-500">{k}</span>
+      <span className="col-span-2 text-stone-800">{v}</span>
     </div>
   );
 }

@@ -39,7 +39,7 @@ export function RepoBrowser() {
         <button className="text-brand-600 hover:underline" onClick={() => { setPath(""); setFile(null); }}>root</button>
         {crumbs.map((c, i) => (
           <span key={i} className="flex items-center gap-1">
-            <span className="text-slate-400">/</span>
+            <span className="text-stone-400">/</span>
             <button className="text-brand-600 hover:underline" onClick={() => setPath(crumbs.slice(0, i + 1).join("/"))}>{c}</button>
           </span>
         ))}
@@ -52,29 +52,29 @@ export function RepoBrowser() {
       )}
 
       {loading ? (
-        <p className="text-slate-500">Loading…</p>
+        <p className="text-stone-500">Loading…</p>
       ) : file ? (
         <Card className="p-5">
           <div className="mb-3 flex items-center justify-between">
-            <span className="font-mono text-sm text-slate-700">{file.path}</span>
+            <span className="font-mono text-sm text-stone-700">{file.path}</span>
             <button className="text-sm text-brand-600 hover:underline" onClick={() => setFile(null)}>← back</button>
           </div>
           {/\.(md|markdown)$/i.test(file.path)
             ? <Markdown>{file.content}</Markdown>
-            : <pre className="overflow-x-auto rounded-lg bg-slate-900 p-4 text-xs text-slate-100">{file.content}</pre>}
+            : <pre className="overflow-x-auto rounded-lg bg-stone-900 p-4 text-xs text-stone-100">{file.content}</pre>}
         </Card>
       ) : (
-        <Card className="divide-y divide-slate-100">
+        <Card className="divide-y divide-stone-100">
           {nodes.map((n) => (
-            <button key={n.sha} onClick={() => open(n)} className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-slate-50">
+            <button key={n.sha} onClick={() => open(n)} className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-stone-50">
               <span className="flex items-center gap-2">
                 <span>{n.type === "tree" ? "📁" : "📄"}</span>
-                <span className="text-sm text-slate-800">{n.path.split("/").pop()}</span>
+                <span className="text-sm text-stone-800">{n.path.split("/").pop()}</span>
               </span>
               {n.type === "blob" && n.size != null && <Badge>{(n.size / 1024).toFixed(1)} KB</Badge>}
             </button>
           ))}
-          {!nodes.length && <p className="px-4 py-6 text-sm text-slate-500">Empty.</p>}
+          {!nodes.length && <p className="px-4 py-6 text-sm text-stone-500">Empty.</p>}
         </Card>
       )}
     </div>

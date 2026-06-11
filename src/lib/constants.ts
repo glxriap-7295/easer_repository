@@ -44,3 +44,56 @@ export type ContributionStatus = (typeof CONTRIBUTION_STATUSES)[number];
 export function categoryRepoDir(value: string): string {
   return CATEGORIES.find((c) => c.value === value)?.repoDir ?? "resources";
 }
+
+/* ───────────────────────── Project lifecycle (Phase 3+) ───────────────────────── */
+
+export const PROJECT_STATUSES = [
+  "draft",
+  "submitted",
+  "under_review",
+  "changes_requested",
+  "approved",
+  "published",
+  "rejected"
+] as const;
+
+export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
+
+export const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
+  draft: "Draft",
+  submitted: "Submitted",
+  under_review: "Under Review",
+  changes_requested: "Changes Requested",
+  approved: "Approved",
+  published: "Published",
+  rejected: "Rejected"
+};
+
+// Root folder in the repository where project contributions are written.
+// Project folders are primary (NOT organised by researcher or category).
+export const CONTRIB_ROOT = process.env.GITHUB_CONTRIB_DIR || "contributions";
+
+/** URL/path-safe slug, e.g. "Tsunami Hazard Study" -> "tsunami-hazard-study". */
+export function slugify(input: string): string {
+  return input
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 60) || "project";
+}
+
+/** Compact token for the primary author used in published filenames. */
+export function authorSlug(name: string): string {
+  return slugify(name).replace(/-/g, "");
+}
+
+/**
+ * Published filename convention: <projectslug>_<primaryauthor>_<original>.
+ * Example: tsunami-hazard-study_jdoe_report.pdf
+ */
+export function contributionFileName(projectSlug: string, primaryAuthor: string, original: string): string {
+  const safeOriginal = original.replace(/[^a-zA-Z0-9._-]+/g, "_");
+  return `${projectSlug}_${authorSlug(primaryAuthor)}_${safeOriginal}`;
+}

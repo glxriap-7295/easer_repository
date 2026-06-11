@@ -88,3 +88,77 @@ export async function listRegistry(): Promise<RegistryRecord[]> {
   }
   return [...mem.registry.values()];
 }
+
+/* ───────────────────────── Projects (Phase 3) ─────────────────────────
+   Additive collection. Legacy `contributions` above is untouched. */
+
+import type { Project } from "./types";
+
+const PROJECTS = "projects";
+const memProjects = new Map<string, Project>();
+
+export async function createProject(p: Project): Promise<Project> {
+  const db = getAdminDb();
+  if (db) await db.collection(PROJECTS).doc(p.id).set(p);
+  else memProjects.set(p.id, p);
+  return p;
+}
+
+export async function getProject(id: string): Promise<Project | null> {
+  const db = getAdminDb();
+  if (db) {
+    const snap = await db.collection(PROJECTS).doc(id).get();
+    return snap.exists ? (snap.data() as Project) : null;
+  }
+  return memProjects.get(id) ?? null;
+}
+
+export async function updateProject(
+  id: string,
+  patch: Partial<Project>,
+  audit?: AuditEntry
+): Promise<Project | null> {
+  const existing = await getProject(id);
+  if (!existing) return null;
+  const next: Project = {
+    ...existing,
+    ...patch,
+    audit: audit ? [...existing.audit, audit] : existing.audit,
+    updatedAt: new Date().toISOString()
+  };
+  const db = getAdminDb();
+  if (db) {
+    await db.collection(PROJECTS).doc(id).set(next);
+    if (audit) await db.collection(AUDIT).add({ projectId: id, ...audit });
+  } else {
+    memProjects.set(id, next);
+  }
+  return next;
+}
+
+export async function listProjectsByOwner(ownerUid: string): Promise<Project[]> {
+  const db = getAdminDb();
+  let rows: Project[];
+  if (db) {
+    const snap = await db.collection(PROJECTS).where("ownerUid", "==", ownerUid).get();
+    rows = snap.docs.map((d) => d.data() as Project);
+  } else {
+    rows = [...memProjects.values()].filter((p) => p.ownerUid === ownerUid);
+  }
+  return rows.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+export async function listProjects(status?: string): Promise<Project[]> {
+  const db = getAdminDb();
+  let rows: Project[];
+  if (db) {
+    let q: FirebaseFirestore.Query<FirebaseFirestore.DocumentData> = db.collection(PROJECTS);
+    if (status) q = q.where("status", "==", status);
+    const snap = await q.get();
+    rows = snap.docs.map((d) => d.data() as Project);
+  } else {
+    rows = [...memProjects.values()];
+    if (status) rows = rows.filter((p) => p.status === status);
+  }
+  return rows.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}

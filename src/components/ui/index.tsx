@@ -30,12 +30,12 @@ export function LinkButton({ href, children, variant = "primary", className }: {
 }
 
 export function Card({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={clsx("rounded-xl border border-slate-200 bg-white shadow-sm", className)}>{children}</div>;
+  return <div className={clsx("rounded-xl border border-stone-200 bg-white shadow-sm", className)}>{children}</div>;
 }
 
 export function Badge({ children, color = "slate" }: { children: React.ReactNode; color?: "slate" | "green" | "amber" | "red" | "blue" }) {
   const styles = {
-    slate: "bg-slate-100 text-slate-700",
+    slate: "bg-stone-100 text-stone-700",
     green: "bg-green-100 text-green-700",
     amber: "bg-amber-100 text-amber-700",
     red: "bg-red-100 text-red-700",
@@ -45,23 +45,23 @@ export function Badge({ children, color = "slate" }: { children: React.ReactNode
 }
 
 export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={clsx("w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500", props.className)} />;
+  return <input {...props} className={clsx("w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500", props.className)} />;
 }
 
 export function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea {...props} className={clsx("w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500", props.className)} />;
+  return <textarea {...props} className={clsx("w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500", props.className)} />;
 }
 
 export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={clsx("w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500", props.className)} />;
+  return <select {...props} className={clsx("w-full rounded-lg border border-stone-300 px-3 py-2 text-sm bg-white focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500", props.className)} />;
 }
 
 export function Field({ label, hint, children, required }: { label: string; hint?: string; children: React.ReactNode; required?: boolean }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium text-slate-700">{label}{required && <span className="text-red-500"> *</span>}</span>
+      <span className="mb-1 block text-sm font-medium text-stone-700">{label}{required && <span className="text-red-500"> *</span>}</span>
       {children}
-      {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
+      {hint && <span className="mt-1 block text-xs text-stone-500">{hint}</span>}
     </label>
   );
 }
