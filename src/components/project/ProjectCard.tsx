@@ -11,7 +11,7 @@ export function ProjectCard({ r }: { r: RegistryRecord }) {
   return (
     <Card className="flex h-full flex-col p-5 transition hover:shadow-card">
       <div className="flex items-start justify-between gap-2">
-        <a href={r.githubUrl} target="_blank" rel="noreferrer" className="font-serif font-semibold text-brand-800 hover:underline">{r.title}</a>
+        <a href={`/projects/${r.id}`} className="font-serif font-semibold text-brand-800 hover:underline">{r.title}</a>
         <Badge color="blue">{categoryLabel}</Badge>
       </div>
       <p className="mt-1 text-sm text-stone-600 line-clamp-3">{r.description}</p>

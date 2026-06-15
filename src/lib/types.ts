@@ -1,4 +1,4 @@
-import type { Category, ContributionStatus, ProjectStatus } from "./constants";
+import type { Category, FileCategory, ContributionStatus, ProjectStatus } from "./constants";
 
 /* ───────────────────────── Legacy (Phase 1) model ─────────────────────────
    Kept intact for backward compatibility. Existing `contributions` documents
@@ -35,6 +35,16 @@ export interface UploadedFile {
   storageKey: string;
   url?: string;
   sha?: string;
+  category?: FileCategory;            // file-level category (project-centric)
+  metadata?: Record<string, string>; // optional per-file technical metadata
+}
+
+export interface ProjectVersion {
+  version: number;
+  at: string;
+  note: string;
+  fileCount: number;
+  commitUrl?: string;
 }
 
 export interface DocumentationDraft {
@@ -89,7 +99,7 @@ export interface Project {
 
   // Core metadata
   title: string;
-  category: Category;
+  category?: Category; // legacy/derived; categorization is now per-file
   description: string;
   purpose: string;
 
@@ -115,6 +125,10 @@ export interface Project {
 
   // Lifecycle artifacts
   slug?: string;
+  readme?: string;     // generated human-readable README
+  summary?: string;    // generated AI_SUMMARY
+  version?: number;
+  history?: ProjectVersion[];
   draft?: DocumentationDraft;
   repoPath?: string;
   githubCommitUrl?: string;
