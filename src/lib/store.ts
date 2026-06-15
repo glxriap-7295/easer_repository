@@ -1,5 +1,6 @@
 import "server-only";
 import { getAdminDb } from "./firebase/admin";
+import { stripUndefined } from "./firestore-sanitize";
 import type { Contribution, RegistryRecord, AuditEntry } from "./types";
 
 // Data-access layer for contributions, the public registry, and the audit log.
@@ -21,7 +22,7 @@ export const usingFirestore = () => getAdminDb() !== null;
 export async function createContribution(c: Contribution): Promise<Contribution> {
   const db = getAdminDb();
   if (db) {
-    await db.collection(COL).doc(c.id).set(c);
+    await db.collection(COL).doc(c.id).set(stripUndefined(c));
   } else {
     mem.contributions.set(c.id, c);
   }
@@ -52,8 +53,8 @@ export async function updateContribution(
   };
   const db = getAdminDb();
   if (db) {
-    await db.collection(COL).doc(id).set(next);
-    if (audit) await db.collection(AUDIT).add({ contributionId: id, ...audit });
+    await db.collection(COL).doc(id).set(stripUndefined(next));
+    if (audit) await db.collection(AUDIT).add(stripUndefined({ contributionId: id, ...audit }));
   } else {
     mem.contributions.set(id, next);
   }
@@ -76,7 +77,7 @@ export async function listContributions(status?: string): Promise<Contribution[]
 
 export async function upsertRegistry(rec: RegistryRecord): Promise<void> {
   const db = getAdminDb();
-  if (db) await db.collection(REG).doc(rec.id).set(rec);
+  if (db) await db.collection(REG).doc(rec.id).set(stripUndefined(rec));
   else mem.registry.set(rec.id, rec);
 }
 
@@ -99,7 +100,7 @@ const memProjects = new Map<string, Project>();
 
 export async function createProject(p: Project): Promise<Project> {
   const db = getAdminDb();
-  if (db) await db.collection(PROJECTS).doc(p.id).set(p);
+  if (db) await db.collection(PROJECTS).doc(p.id).set(stripUndefined(p));
   else memProjects.set(p.id, p);
   return p;
 }
@@ -128,8 +129,8 @@ export async function updateProject(
   };
   const db = getAdminDb();
   if (db) {
-    await db.collection(PROJECTS).doc(id).set(next);
-    if (audit) await db.collection(AUDIT).add({ projectId: id, ...audit });
+    await db.collection(PROJECTS).doc(id).set(stripUndefined(next));
+    if (audit) await db.collection(AUDIT).add(stripUndefined({ projectId: id, ...audit }));
   } else {
     memProjects.set(id, next);
   }

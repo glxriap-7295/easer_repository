@@ -36,9 +36,17 @@ export function getAdminApp(): App | null {
   return app;
 }
 
+let settingsApplied = false;
 export function getAdminDb(): Firestore | null {
   const a = getAdminApp();
-  return a ? getFirestore(a) : null;
+  if (!a) return null;
+  const db = getFirestore(a);
+  if (!settingsApplied) {
+    // Belt-and-suspenders: never let an undefined value reach Firestore.
+    try { db.settings({ ignoreUndefinedProperties: true }); } catch { /* already initialised */ }
+    settingsApplied = true;
+  }
+  return db;
 }
 
 export const isAdminConfigured = () => getAdminApp() !== null;

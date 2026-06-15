@@ -2,6 +2,7 @@ import "server-only";
 import { getAdminApp, getAdminDb } from "./firebase/admin";
 import { getAuth } from "firebase-admin/auth";
 import { bootstrapRole } from "./auth";
+import { stripUndefined } from "./firestore-sanitize";
 import type { Role, UserProfile } from "./roles";
 
 // Firestore document describing a platform user. Auth lives in Firebase Auth;
@@ -58,7 +59,7 @@ export async function ensureUserDoc(params: {
     createdAt: now,
     updatedAt: now
   };
-  if (db) await db.collection(COL).doc(params.uid).set(profile);
+  if (db) await db.collection(COL).doc(params.uid).set(stripUndefined(profile));
   await syncClaims(params.uid, role);
   return profile;
 }
@@ -71,7 +72,7 @@ export async function updateUserProfile(
   const existing = await getUserDoc(uid);
   if (!existing) return null;
   const next: UserProfile = { ...existing, ...patch, updatedAt: new Date().toISOString() };
-  if (db) await db.collection(COL).doc(uid).set(next);
+  if (db) await db.collection(COL).doc(uid).set(stripUndefined(next));
   return next;
 }
 
@@ -81,7 +82,7 @@ export async function setUserRole(uid: string, role: Role): Promise<UserProfile 
   const existing = await getUserDoc(uid);
   if (!existing) return null;
   const next: UserProfile = { ...existing, role, updatedAt: new Date().toISOString() };
-  if (db) await db.collection(COL).doc(uid).set(next);
+  if (db) await db.collection(COL).doc(uid).set(stripUndefined(next));
   await syncClaims(uid, role);
   return next;
 }
@@ -89,7 +90,7 @@ export async function setUserRole(uid: string, role: Role): Promise<UserProfile 
 export async function setUserActive(uid: string, active: boolean): Promise<void> {
   const db = getAdminDb();
   const app = getAdminApp();
-  if (db) await db.collection(COL).doc(uid).set({ active, updatedAt: new Date().toISOString() }, { merge: true });
+  if (db) await db.collection(COL).doc(uid).set(stripUndefined({ active, updatedAt: new Date().toISOString() }), { merge: true });
   if (app) await getAuth(app).updateUser(uid, { disabled: !active });
 }
 
