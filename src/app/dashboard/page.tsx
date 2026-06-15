@@ -63,11 +63,16 @@ function DashboardInner() {
             </div>
             <div className="flex items-center gap-3">
               <Badge color={statusColor[p.status] || "slate"}>{t(`statuses.${p.status}`)}</Badge>
-              {(p.status === "draft" || p.status === "changes_requested")
-                ? <Link href={`/contribute?draft=${p.id}`} className="rounded-lg bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-800">{p.status === "draft" ? t("dashboard.resume") : t("dashboard.revise")}</Link>
-                : p.githubCommitUrl
-                  ? <a href={p.githubCommitUrl} target="_blank" rel="noreferrer" className="text-sm text-accent-600 hover:underline">{t("common.viewOnGithub")}</a>
-                  : <span className="text-xs text-stone-400">{t("dashboard.inReview")}</span>}
+              {(p.status === "draft" || p.status === "changes_requested") ? (
+                <Link href={`/contribute?draft=${p.id}`} className="rounded-lg bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-800">{p.status === "draft" ? t("dashboard.resume") : t("dashboard.revise")}</Link>
+              ) : (p.status === "approved" || p.status === "published") ? (
+                <span className="flex items-center gap-3">
+                  <Link href={`/projects/${p.id}`} className="text-sm text-accent-700 hover:underline">View project</Link>
+                  <Link href={`/projects/${p.id}/add`} className="rounded-lg bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-800">Add files</Link>
+                </span>
+              ) : (
+                <span className="text-xs text-stone-400">{t("dashboard.inReview")}</span>
+              )}
             </div>
           </Card>
         ))}

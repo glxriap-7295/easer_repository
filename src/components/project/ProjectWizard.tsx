@@ -2,37 +2,33 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { Card, Button, Input, Textarea, Select, Field, Badge } from "@/components/ui";
-import { CATEGORIES } from "@/lib/constants";
+import { FILE_CATEGORIES, FILE_METADATA_FIELDS, type FileCategory } from "@/lib/constants";
 import { apiPost, apiPatch, apiGet } from "@/lib/client";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useT } from "@/components/i18n/LanguageProvider";
 import type { Author, Institution, UploadedFile, Project } from "@/lib/types";
 
 interface FormState {
-  title: string; category: string; description: string; purpose: string;
+  title: string; description: string; purpose: string;
   authors: Author[]; institutions: Institution[]; contactName: string; contactEmail: string;
-  dependencies: string; requirements: string; installation: string; execution: string;
-  inputFiles: string; outputFiles: string; notes: string; keywords: string; license: string;
+  keywords: string; license: string; notes: string;
   files: UploadedFile[];
 }
 
 const blank: FormState = {
-  title: "", category: "model", description: "", purpose: "",
+  title: "", description: "", purpose: "",
   authors: [{ name: "", email: "", orcid: "" }], institutions: [{ name: "", department: "" }],
-  contactName: "", contactEmail: "",
-  dependencies: "", requirements: "", installation: "", execution: "",
-  inputFiles: "", outputFiles: "", notes: "", keywords: "", license: "", files: []
+  contactName: "", contactEmail: "", keywords: "", license: "", notes: "", files: []
 };
 
 function fromProject(p: Project): FormState {
   return {
-    title: p.title || "", category: p.category || "model", description: p.description || "", purpose: p.purpose || "",
+    title: p.title || "", description: p.description || "", purpose: p.purpose || "",
     authors: p.authors?.length ? p.authors : [{ name: "", email: "", orcid: "" }],
     institutions: p.institutions?.length ? p.institutions : [{ name: "", department: "" }],
     contactName: p.contactName || "", contactEmail: p.contactEmail || "",
-    dependencies: p.dependencies || "", requirements: p.requirements || "", installation: p.installation || "",
-    execution: p.execution || "", inputFiles: p.inputFiles || "", outputFiles: p.outputFiles || "",
-    notes: p.notes || "", keywords: (p.keywords || []).join(", "), license: p.license || "", files: p.files || []
+    keywords: (p.keywords || []).join(", "), license: p.license || "", notes: p.notes || "",
+    files: p.files || []
   };
 }
 
@@ -78,21 +74,27 @@ export function ProjectWizard({ projectId }: { projectId?: string }) {
         const res = await fetch("/api/upload", { method: "POST", body: fd });
         const json = await res.json();
         if (!json.ok) throw new Error(json.error);
-        setF((s) => ({ ...s, files: [...s.files, json.data] }));
+        setF((s) => ({ ...s, files: [...s.files, { ...json.data, category: "other" as FileCategory, metadata: {} }] }));
       }
     } catch (e: any) { setErr(`Upload failed: ${e.message}`); }
     finally { setBusy(""); }
   }, []);
 
+  function setFile(i: number, patch: Partial<UploadedFile>) {
+    setF((s) => ({ ...s, files: s.files.map((x, j) => (j === i ? { ...x, ...patch } : x)) }));
+  }
+  function setFileMeta(i: number, key: string, val: string) {
+    setF((s) => ({ ...s, files: s.files.map((x, j) => (j === i ? { ...x, metadata: { ...(x.metadata || {}), [key]: val } } : x)) }));
+  }
+
   function payload(extra: object = {}) {
     return {
-      title: f.title, category: f.category, description: f.description, purpose: f.purpose,
+      title: f.title, description: f.description, purpose: f.purpose,
       authors: f.authors.filter((a) => a.name.trim()), institutions: f.institutions.filter((i) => i.name.trim()),
       contactName: f.contactName, contactEmail: f.contactEmail,
-      dependencies: f.dependencies, requirements: f.requirements, installation: f.installation,
-      execution: f.execution, inputFiles: f.inputFiles, outputFiles: f.outputFiles, notes: f.notes,
       keywords: f.keywords.split(",").map((s) => s.trim()).filter(Boolean),
-      license: f.license || undefined, files: f.files, ...extra
+      license: f.license || undefined, notes: f.notes,
+      files: f.files, ...extra
     };
   }
 
@@ -128,15 +130,11 @@ export function ProjectWizard({ projectId }: { projectId?: string }) {
       {err && <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{err}</div>}
       {info && <div className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">{info}</div>}
 
+      {/* Page 1 — Project information */}
       <Card className="p-6">
         <h2 className="font-serif text-lg font-semibold text-stone-900">{t("contribute.project")}</h2>
         <div className="mt-4 grid gap-4">
           <Field label={t("contribute.title")} required><Input value={f.title} onChange={set("title")} /></Field>
-          <Field label={t("contribute.category")} required>
-            <Select value={f.category} onChange={set("category")}>
-              {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-            </Select>
-          </Field>
           <Field label={t("contribute.description")} required><Textarea rows={3} value={f.description} onChange={set("description")} /></Field>
           <Field label={t("contribute.purpose")} required><Textarea rows={2} value={f.purpose} onChange={set("purpose")} /></Field>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -157,8 +155,10 @@ export function ProjectWizard({ projectId }: { projectId?: string }) {
         </div>
       </Card>
 
+      {/* Page 2 + 3 — Files with per-file category + optional metadata */}
       <Card className="p-6">
         <h2 className="font-serif text-lg font-semibold text-stone-900">{t("contribute.filesSection")}</h2>
+        <p className="mt-1 text-sm text-stone-500">{t("contribute.optionalHelp")}</p>
         <div
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
@@ -172,32 +172,45 @@ export function ProjectWizard({ projectId }: { projectId?: string }) {
           </label>
           {busy === "upload" && <p className="mt-2 text-sm text-accent-600">{t("contribute.uploading")}</p>}
         </div>
-        <div className="mt-4 space-y-2">
-          {f.files.map((file, i) => (
-            <div key={i} className="flex items-center justify-between rounded-lg border border-stone-200 px-3 py-2 text-sm">
-              <span className="truncate font-mono">{file.name}</span>
-              <span className="flex items-center gap-3">
-                <Badge>{(file.size / 1024).toFixed(1)} KB</Badge>
-                <button className="text-red-500 hover:underline" onClick={() => setF({ ...f, files: f.files.filter((_, j) => j !== i) })}>✕</button>
-              </span>
-            </div>
-          ))}
+
+        <div className="mt-4 space-y-3">
+          {f.files.map((file, i) => {
+            const fields = FILE_METADATA_FIELDS[(file.category as FileCategory) || "other"] || [];
+            return (
+              <div key={i} className="rounded-lg border border-stone-200 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="truncate font-mono text-sm">{file.name}</span>
+                  <span className="flex items-center gap-2">
+                    <Badge>{(file.size / 1024).toFixed(1)} KB</Badge>
+                    <button className="text-red-500 hover:underline" onClick={() => setF({ ...f, files: f.files.filter((_, j) => j !== i) })}>✕</button>
+                  </span>
+                </div>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  <label className="text-xs text-stone-500">
+                    Category
+                    <Select value={file.category || "other"} onChange={(e) => setFile(i, { category: e.target.value as FileCategory })} className="mt-1">
+                      {FILE_CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+                    </Select>
+                  </label>
+                </div>
+                {fields.length > 0 && (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer text-xs text-accent-700">Optional technical metadata</summary>
+                    <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                      {fields.map((fld) => (
+                        <label key={fld.key} className="text-xs text-stone-500">
+                          {fld.label}
+                          <Input value={(file.metadata || {})[fld.key] || ""} onChange={(e) => setFileMeta(i, fld.key, e.target.value)} className="mt-1" />
+                        </label>
+                      ))}
+                    </div>
+                  </details>
+                )}
+              </div>
+            );
+          })}
           {!f.files.length && <p className="text-sm text-stone-500">{t("contribute.noFiles")}</p>}
         </div>
-      </Card>
-
-      <Card className="p-6">
-        <h2 className="font-serif text-lg font-semibold text-stone-900">{t("contribute.technical")} <span className="text-sm font-normal text-stone-400">({t("common.optional")})</span></h2>
-        <p className="mt-1 text-sm text-stone-500">{t("contribute.optionalHelp")}</p>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <Field label="Dependencies"><Textarea rows={2} value={f.dependencies} onChange={set("dependencies")} /></Field>
-          <Field label="Requirements"><Textarea rows={2} value={f.requirements} onChange={set("requirements")} /></Field>
-          <Field label="Installation"><Textarea rows={2} value={f.installation} onChange={set("installation")} /></Field>
-          <Field label="Execution"><Textarea rows={2} value={f.execution} onChange={set("execution")} /></Field>
-          <Field label="Input files"><Textarea rows={2} value={f.inputFiles} onChange={set("inputFiles")} /></Field>
-          <Field label="Output files"><Textarea rows={2} value={f.outputFiles} onChange={set("outputFiles")} /></Field>
-        </div>
-        <div className="mt-4"><Field label="Notes"><Textarea rows={2} value={f.notes} onChange={set("notes")} /></Field></div>
       </Card>
 
       <div className="flex flex-wrap items-center gap-3">

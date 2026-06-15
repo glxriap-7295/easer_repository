@@ -30,7 +30,9 @@ export const uploadedFileSchema = z.object({
   contentType: z.string(),
   storageKey: z.string(),
   url: z.string().optional(),
-  sha: z.string().optional()
+  sha: z.string().optional(),
+  category: z.enum(["report", "dataset", "model", "gis", "presentation", "documentation", "other"]).optional(),
+  metadata: z.record(z.string()).optional()
 });
 
 export const createContributionSchema = z.object({

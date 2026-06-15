@@ -121,3 +121,62 @@ export const EASER_INFO = {
   ] as { en: string; es: string }[],
   officialCta: { en: "Visit the official EASER site", es: "Visita el sitio oficial de EASER" }
 };
+
+/* ───────────── File-level categories (project-centric repository) ─────────────
+   Categories are per FILE (not per project). Each maps to a human-readable
+   folder in the published project so a non-programmer can navigate it. */
+export type FileCategory =
+  | "report" | "dataset" | "model" | "gis" | "presentation" | "documentation" | "other";
+
+export const FILE_CATEGORIES: {
+  value: FileCategory; label: string; folder: string; description: string;
+}[] = [
+  { value: "report", label: "Research Report", folder: "Reports", description: "Reports, papers, manuscripts (PDF, DOCX)." },
+  { value: "dataset", label: "Dataset", folder: "Datasets", description: "Tabular, time-series or raw scientific data." },
+  { value: "model", label: "Computational Model", folder: "Models", description: "Models, simulation code, notebooks." },
+  { value: "gis", label: "GIS Layer", folder: "GIS", description: "Geospatial layers, shapefiles, rasters, maps." },
+  { value: "presentation", label: "Presentation", folder: "Presentations", description: "Slides and presentation material." },
+  { value: "documentation", label: "Documentation", folder: "Documentation", description: "Guides, protocols, technical docs." },
+  { value: "other", label: "Other", folder: "Other", description: "Any other supporting resource." }
+];
+
+export function fileCategoryFolder(value?: string): string {
+  return FILE_CATEGORIES.find((c) => c.value === value)?.folder ?? "Other";
+}
+export function fileCategoryLabel(value?: string): string {
+  return FILE_CATEGORIES.find((c) => c.value === value)?.label ?? "Other";
+}
+
+// Optional technical-metadata fields shown dynamically per file category.
+export const FILE_METADATA_FIELDS: Record<FileCategory, { key: string; label: string }[]> = {
+  dataset: [
+    { key: "variables", label: "Variables" },
+    { key: "collectionMethod", label: "Collection method" },
+    { key: "timeRange", label: "Time range" }
+  ],
+  model: [
+    { key: "dependencies", label: "Dependencies" },
+    { key: "installation", label: "Installation" },
+    { key: "execution", label: "Execution instructions" }
+  ],
+  gis: [
+    { key: "coordinateSystem", label: "Coordinate system" },
+    { key: "spatialCoverage", label: "Spatial coverage" }
+  ],
+  report: [],
+  presentation: [],
+  documentation: [],
+  other: []
+};
+
+// Root folder for published, project-centric content (human-readable).
+export const PUBLISHED_ROOT = process.env.GITHUB_PUBLISHED_ROOT || "Published Projects";
+
+/** Human-readable, filesystem-safe project folder name (keeps spaces). */
+export function projectFolderName(title: string): string {
+  return (title || "Untitled Project")
+    .replace(/[\/\\:*?"<>|]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80) || "Untitled Project";
+}
