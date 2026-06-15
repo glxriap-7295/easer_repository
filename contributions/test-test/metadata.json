@@ -1,0 +1,45 @@
+{
+  "schema": "easer-project/1",
+  "id": "p_mqfb71u30e3axi",
+  "title": "test test ",
+  "slug": "test-test",
+  "category": "report",
+  "description": "test description",
+  "purpose": "test purpose",
+  "authors": [
+    {
+      "name": "gpurcellmunoz",
+      "email": "gpurcellmunoz@gmail.com",
+      "orcid": ""
+    }
+  ],
+  "institutions": [
+    {
+      "name": "test institution",
+      "department": "test department"
+    }
+  ],
+  "contact": {
+    "name": "gpurcellmunoz",
+    "email": "gpurcellmunoz@gmail.com"
+  },
+  "keywords": [
+    "test"
+  ],
+  "license": "test",
+  "relatedLinks": [],
+  "files": [
+    "test-test_gpurcellmunoz_Project_Proposal_8_28PM-12AM_1_.pdf"
+  ],
+  "technical": {
+    "dependencies": null,
+    "requirements": null,
+    "installation": null,
+    "execution": null,
+    "inputFiles": null,
+    "outputFiles": null
+  },
+  "year": 2026,
+  "submissionDate": "2026-06-15T14:30:18.438Z",
+  "source": "easer-research-data-hub"
+}
