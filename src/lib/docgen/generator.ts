@@ -18,30 +18,34 @@ export interface DocumentationGenerator {
 }
 
 // ── helpers ────────────────────────────────────────────────────────────────
-const orNone = (v?: string) => (v && v.trim() ? v.trim() : "—");
 function cat(f: UploadedFile): FileCategory { return (f.category as FileCategory) || "other"; }
 function byCategory(files: UploadedFile[]) {
   const map = new Map<FileCategory, UploadedFile[]>();
   for (const f of files) { const c = cat(f); if (!map.has(c)) map.set(c, []); map.get(c)!.push(f); }
   return map;
 }
-function authorsList(authors: Author[]) {
-  return authors.length ? authors.map((a) => `${a.name}${a.orcid ? ` (ORCID ${a.orcid})` : ""}`).join("; ") : "—";
+function authorsSentence(authors: Author[]) {
+  const names = authors.map((a) => a.name).filter(Boolean);
+  if (!names.length) return "the EASER project team";
+  if (names.length === 1) return names[0];
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }
-function institutionsList(institutions: Institution[]) {
-  return institutions.length ? institutions.map((i) => `${i.name}${i.department ? ` — ${i.department}` : ""}`).join("; ") : "—";
+function institutionsSentence(institutions: Institution[]) {
+  const names = institutions.map((i) => i.name).filter(Boolean);
+  if (!names.length) return "";
+  if (names.length === 1) return names[0];
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }
-function fileMeta(f: UploadedFile): string {
+function metaInline(f: UploadedFile): string {
   if (!f.metadata) return "";
   const parts = Object.entries(f.metadata).filter(([, v]) => v && String(v).trim());
-  return parts.length ? ` — ${parts.map(([k, v]) => `${k}: ${v}`).join("; ")}` : "";
+  return parts.length ? ` (${parts.map(([k, v]) => `${k}: ${v}`).join("; ")})` : "";
 }
 
 // ── Template generator (deterministic, always available) ─────────────────────
 export class TemplateDocumentationGenerator implements DocumentationGenerator {
   readonly name = "template";
   async available() { return true; }
-
   async generate(p: Project): Promise<ProjectDoc> {
     return { readme: buildReadme(p), summary: buildSummary(p), generatedBy: "template" };
   }
@@ -49,69 +53,94 @@ export class TemplateDocumentationGenerator implements DocumentationGenerator {
 
 export function buildReadme(p: Project): string {
   const grouped = byCategory(p.files);
+  const present = FILE_CATEGORIES.filter((c) => grouped.get(c.value)?.length);
   const year = new Date(p.publishedAt || p.submittedAt || p.createdAt || Date.now()).getFullYear();
-  const contents = FILE_CATEGORIES
-    .filter((c) => grouped.get(c.value)?.length)
-    .map((c) => `- **${c.folder}/** — ${grouped.get(c.value)!.length} file(s): ${c.description}`)
-    .join("\n") || "_No files yet._";
 
-  const fileDescriptions = FILE_CATEGORIES
-    .filter((c) => grouped.get(c.value)?.length)
-    .map((c) => {
-      const items = grouped.get(c.value)!.map((f) => `- \`${c.folder}/${f.name}\`${fileMeta(f)}`).join("\n");
-      return `### ${c.label}\n${items}`;
-    }).join("\n\n") || "_No files yet._";
+  const overview = p.description?.trim()
+    ? p.description.trim()
+    : `${p.title} is a research project archived in the EASER repository.`;
+  const why = p.purpose?.trim()
+    ? p.purpose.trim()
+    : "This archive preserves the project's resources so that other researchers can reproduce, build on, and cite the work.";
 
-  const datasets = grouped.get("dataset") || [];
+  // Repository contents (narrative list of folders that actually exist)
+  const contents = present.length
+    ? present.map((c) => `- **${c.folder}/** — ${grouped.get(c.value)!.length} item(s). ${c.description}`).join("\n")
+    : "_No resource files have been added yet._";
+
+  // Where to start (narrative reading order)
+  const has = (v: FileCategory) => (grouped.get(v)?.length || 0) > 0;
+  let start = "Begin with **AI_SUMMARY.md** for a one-minute overview of the project.";
+  if (has("report")) start += " Then read the material in **Reports/**, which describes the study and its findings.";
+  if (has("dataset")) start += " The underlying data is in **Datasets/**.";
+  if (has("model")) start += " Analyses and simulations are in **Models/**.";
+  if (has("gis")) start += " Spatial layers are in **GIS/**.";
+
+  // How resources relate
+  const relate = [
+    has("dataset") && has("model") ? "The datasets serve as inputs to the models." : "",
+    has("model") && has("report") ? "The models produce the results discussed in the reports." : "",
+    has("dataset") && has("report") && !has("model") ? "The reports analyse and interpret the datasets." : "",
+    has("gis") ? "GIS layers provide the spatial context for the analysis." : ""
+  ].filter(Boolean).join(" ") || "Each folder groups a single type of resource; together they document the project end to end.";
+
+  // File descriptions
+  const fileDescriptions = present.map((c) => {
+    const items = grouped.get(c.value)!.map((f) => `- \`${c.folder}/${f.name}\`${metaInline(f)}`).join("\n");
+    return `### ${c.label}\n${items}`;
+  }).join("\n\n") || "_No files yet._";
+
+  // Requirements & dependencies — aggregate from model file metadata
   const models = grouped.get("model") || [];
-  const gis = grouped.get("gis") || [];
-  const dataModels = (datasets.length || models.length || gis.length)
-    ? [
-        datasets.length ? `**Datasets (${datasets.length}):** ${datasets.map((f) => `\`${f.name}\``).join(", ")}` : "",
-        models.length ? `**Models (${models.length}):** ${models.map((f) => `\`${f.name}\``).join(", ")}` : "",
-        gis.length ? `**GIS layers (${gis.length}):** ${gis.map((f) => `\`${f.name}\``).join(", ")}` : ""
-      ].filter(Boolean).join("\n\n")
-    : "_No datasets or models are included in this project._";
+  const reqLines = models.flatMap((f) => {
+    const m = f.metadata || {};
+    return [
+      m.dependencies ? `- **${f.name}** dependencies: ${m.dependencies}` : "",
+      m.installation ? `- **${f.name}** installation: ${m.installation}` : "",
+      m.execution ? `- **${f.name}** execution: ${m.execution}` : ""
+    ].filter(Boolean);
+  });
+  const requirements = reqLines.length ? reqLines.join("\n") : "No special software requirements are recorded for this project.";
 
-  const start = grouped.get("report")?.length
-    ? `Start with the report in **Reports/**, then review the data in **Datasets/** and the models in **Models/**.`
-    : grouped.get("documentation")?.length
-      ? `Start with **Documentation/**, then explore the available resources.`
-      : `Read **AI_SUMMARY.md** for a quick overview, then browse the resource folders.`;
+  const institutionsTxt = institutionsSentence(p.institutions);
 
   return `# ${p.title}
 
-## Project Overview
-${orNone(p.description)}
+${overview}
 
-${p.purpose ? `**Purpose.** ${p.purpose}\n` : ""}
-## Repository Contents
+## What this project is
+${overview}
+
+## Why it exists
+${why}
+
+## Repository contents
+This repository is organised into folders, each holding one type of resource:
+
 ${contents}
 
-Each top-level folder groups resources of one type. \`README.md\` (this file), \`AI_SUMMARY.md\`, and \`metadata.json\` describe the project as a whole.
+The project root also contains this **README.md**, an **AI_SUMMARY.md** (a one-minute overview), and **metadata.json** (machine-readable project metadata).
 
-## How To Use This Repository
+## Where to start
 ${start}
 
-If you are new to this project, read **AI_SUMMARY.md** first — it explains the objective, methodology, and where to begin.
+## How the resources relate
+${relate}
 
-## File Descriptions
+## File descriptions
 ${fileDescriptions}
 
-## Data & Models
-${dataModels}
+## Requirements & dependencies
+${requirements}
 
 ## Contributors
-- **Authors:** ${authorsList(p.authors)}
-- **Institutions:** ${institutionsList(p.institutions)}
-- **Contact:** ${p.contactName || "—"}${p.contactEmail ? ` <${p.contactEmail}>` : ""}
+This project was developed by ${authorsSentence(p.authors)}${institutionsTxt ? `, ${institutionsTxt}` : ""}.${p.contactName ? ` For questions, contact ${p.contactName}${p.contactEmail ? ` (${p.contactEmail})` : ""}.` : ""}
 
-## Citation Information
-> ${p.authors.map((a) => a.name).join("; ") || "EASER contributors"} (${year}). *${p.title}*. EASER Research Repository${p.institutions[0]?.name ? `, ${p.institutions[0].name}` : ""}.
+## Citation
+> ${authorsSentence(p.authors)} (${year}). *${p.title}*. EASER Research Repository${p.institutions[0]?.name ? `, ${p.institutions[0].name}` : ""}.
 
-${p.license ? `**License:** ${p.license}\n` : ""}${p.version ? `**Version:** ${p.version}\n` : ""}
----
-*Maintained through the EASER Research Data Hub. Documentation generated automatically and reviewed by a project curator.*
+${p.license ? `## License\n${p.license}\n\n` : ""}---
+*Archived and documented through the EASER Research Data Hub${p.version ? ` · version ${p.version}` : ""}.*
 `;
 }
 
@@ -123,18 +152,17 @@ export function buildSummary(p: Project): string {
   const models = (grouped.get("model") || []).map((f) => f.name);
   const reports = (grouped.get("report") || []).map((f) => f.name);
 
-  const methodology = [p.purpose, p.execution, p.installation].filter(Boolean).join(" ") ||
-    "See the project resources and report(s) for methodological detail.";
-
-  const start = reports.length ? `the report(s) in **Reports/**`
-    : datasets.length ? `the data in **Datasets/**`
-    : models.length ? `the model(s) in **Models/**`
-    : `the resource folders`;
+  const methodology = [p.purpose].filter(Boolean).join(" ") ||
+    "See the reports and resources in this repository for methodological detail.";
+  const start = reports.length ? "the report(s) in **Reports/**"
+    : datasets.length ? "the data in **Datasets/**"
+    : models.length ? "the model(s) in **Models/**"
+    : "the resource folders";
 
   return `# AI Summary — ${p.title}
 
 ## Objective
-${orNone(p.description)}
+${p.description?.trim() || "Research project archived in the EASER repository."}
 
 ## Methodology
 ${methodology}
@@ -142,19 +170,13 @@ ${methodology}
 ## Available Resources
 This project includes ${counts}.
 
-## Datasets
-${datasets.length ? datasets.map((d) => `- ${d}`).join("\n") : "_None included._"}
-
-## Models
-${models.length ? models.map((m) => `- ${m}`).join("\n") : "_None included._"}
-
 ## Key Outputs
-${p.outputFiles ? p.outputFiles : reports.length ? reports.map((r) => `- ${r}`).join("\n") : "_See the resources above._"}
+${reports.length ? reports.map((r) => `- ${r}`).join("\n") : "See the resources above for the project's outputs."}
 
 ## Recommended Starting Point
-A new researcher should begin with ${start}, then read the full **README.md**.
+A researcher new to this project should begin with ${start}, then consult the full **README.md**.
 
-${p.keywords?.length ? `**Keywords:** ${p.keywords.join(", ")}\n` : ""}`;
+${p.keywords?.length ? `_Keywords: ${p.keywords.join(", ")}._\n` : ""}`;
 }
 
 // ── Ollama generator (local, optional) ───────────────────────────────────────
@@ -186,7 +208,6 @@ export class OllamaDocumentationGenerator implements DocumentationGenerator {
   }
 
   async generate(p: Project): Promise<ProjectDoc> {
-    // Build the deterministic template first; use it as both context and fallback.
     const base = await this.fallback.generate(p);
     if (!(await this.available())) return base;
     try {
@@ -196,10 +217,10 @@ export class OllamaDocumentationGenerator implements DocumentationGenerator {
         files: p.files.map((f) => ({ name: f.name, category: fileCategoryLabel(f.category), folder: fileCategoryFolder(f.category), metadata: f.metadata }))
       }, null, 2);
       const readme = await this.ask(
-        `You are documenting a research project for the EASER seismic-risk repository. Using ONLY the facts below, write a clear, professional README.md in Markdown with these sections: Project Overview, Repository Contents, How To Use This Repository, File Descriptions, Data & Models, Contributors, Citation Information. Do not invent facts. Output only Markdown.\n\nFACTS:\n${facts}`
+        `You are writing project documentation for the EASER seismic-risk research repository. Using ONLY the facts below, write a human-readable README.md in Markdown that reads like documentation (prose, not a form). Cover: what the project is, why it exists, repository contents (the folders), where to start, how datasets/models/reports/GIS relate, file descriptions, requirements/dependencies, contributors, and citation. Do not invent facts. Output only Markdown.\n\nFACTS:\n${facts}`
       );
       const summary = await this.ask(
-        `Using ONLY these facts, write a concise AI_SUMMARY.md in Markdown with sections: Objective, Methodology, Available Resources, Datasets, Models, Key Outputs, Recommended Starting Point. Be faithful; do not invent. Output only Markdown.\n\nFACTS:\n${facts}`
+        `Using ONLY these facts, write a concise AI_SUMMARY.md (Markdown) a researcher can read in under a minute, with sections: Objective, Methodology, Available Resources, Key Outputs, Recommended Starting Point. Be faithful; do not invent. Output only Markdown.\n\nFACTS:\n${facts}`
       );
       return { readme, summary, generatedBy: `ollama:${this.model}` };
     } catch (err) {

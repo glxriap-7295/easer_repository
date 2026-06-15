@@ -103,5 +103,12 @@ export async function publishProject(p: Project, actorEmail: string): Promise<Pr
       : `Your project "${p.title}" (v${nextVersion}) has been published:\n${result.url}`
   });
 
+  // Files are now in the repository tree; clear them from temporary staging.
+  // (Only when committed directly to the default branch — under the PR strategy
+  // the bytes are still needed until the PR is merged.)
+  if (result.strategy === "commit") {
+    await Promise.allSettled(p.files.map((file) => storage.delete(file.storageKey)));
+  }
+
   return updated || p;
 }
