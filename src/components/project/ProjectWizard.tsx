@@ -188,6 +188,7 @@ export function ProjectWizard({ projectId }: { projectId?: string }) {
 
       <Card className="p-6">
         <h2 className="font-serif text-lg font-semibold text-stone-900">{t("contribute.technical")} <span className="text-sm font-normal text-stone-400">({t("common.optional")})</span></h2>
+        <p className="mt-1 text-sm text-stone-500">{t("contribute.optionalHelp")}</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <Field label="Dependencies"><Textarea rows={2} value={f.dependencies} onChange={set("dependencies")} /></Field>
           <Field label="Requirements"><Textarea rows={2} value={f.requirements} onChange={set("requirements")} /></Field>

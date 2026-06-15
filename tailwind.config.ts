@@ -1,21 +1,23 @@
 import type { Config } from "tailwindcss";
 
-// EASER earth-tone design language (inspired by proyectoeaser.cl).
-// brand = terracotta/clay primary; accent = deep pine/teal; neutrals use "stone".
+// EASER geoscience identity (aligned with the official logo & proyectoeaser.cl).
+// brand  = deep petrol/teal — ocean/earth depth, seismic science (primary).
+// accent = warm gold/amber — taken from the EASER logo (highlights, links).
+// neutrals use Tailwind's warm "stone" scale.
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
         brand: {
-          50: "#faf6f2", 100: "#f3e9e0", 200: "#e6d2c1", 300: "#d4b39a",
-          400: "#c08e6e", 500: "#a9714f", 600: "#8f5a3c", 700: "#734733",
-          800: "#5d3a2c", 900: "#4d3127"
+          50: "#eef4f6", 100: "#d6e6ea", 200: "#aecfd6", 300: "#7db0bb",
+          400: "#4f8e9d", 500: "#2f6f80", 600: "#245a69", 700: "#1d4a57",
+          800: "#173b46", 900: "#122e37"
         },
         accent: {
-          50: "#eef5f3", 100: "#d4e7e1", 200: "#a9cfc3", 300: "#75b0a0",
-          400: "#479184", 500: "#2f6b5e", 600: "#245447", 700: "#1e443a",
-          800: "#193730", 900: "#142d28"
+          50: "#fdf6e9", 100: "#f8e7c2", 200: "#f0cf86", 300: "#e6b455",
+          400: "#d99a2f", 500: "#bf7e1c", 600: "#9c6416", 700: "#7c4f14",
+          800: "#5f3d12", 900: "#4d3210"
         }
       },
       fontFamily: {
@@ -24,7 +26,7 @@ const config: Config = {
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"]
       },
       boxShadow: {
-        card: "0 1px 2px rgba(77,49,39,0.04), 0 4px 16px rgba(77,49,39,0.06)"
+        card: "0 1px 2px rgba(18,46,55,0.05), 0 4px 16px rgba(18,46,55,0.08)"
       }
     }
   },
