@@ -20,7 +20,8 @@ export function Navbar() {
     <header className="sticky top-0 z-30 border-b border-stone-200 bg-stone-50/90 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2 font-serif text-lg font-bold text-brand-800">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand-700 font-sans text-sm text-white">E</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/easer-logo.svg" alt="EASER" width={36} height={36} className="h-9 w-9" />
           <span>EASER<span className="font-sans font-normal text-stone-500"> Data Hub</span></span>
         </Link>
 
