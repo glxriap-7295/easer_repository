@@ -1,5 +1,6 @@
 import { listRegistry } from "@/lib/store";
 import { ok } from "@/lib/api";
+import { compareInstitutions } from "@/lib/constants";
 import type { RegistryRecord } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -22,7 +23,7 @@ export async function GET() {
   rows.forEach(add);
   return ok({
     authors: [...authors].sort(),
-    institutions: [...institutions].sort(),
+    institutions: [...institutions].sort(compareInstitutions),
     categories: [...categories].sort(),
     keywords: [...keywords].sort(),
     years: [...years].sort((a, b) => b - a)

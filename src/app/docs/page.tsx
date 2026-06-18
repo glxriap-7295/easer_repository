@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Card, Badge } from "@/components/ui";
 import { apiGet } from "@/lib/client";
+import { orderInstitutions } from "@/lib/constants";
 import { useT } from "@/components/i18n/LanguageProvider";
 import type { RegistryRecord } from "@/lib/types";
 
@@ -26,7 +27,7 @@ export default function DocsPage() {
                   <Badge color="blue">{r.category}</Badge>
                 </div>
                 <p className="mt-1 text-sm text-stone-600">{r.description}</p>
-                <p className="mt-1 text-xs text-stone-500">{(r.authors?.length ? r.authors : [r.author]).join(", ")} · {(r.institutions?.length ? r.institutions : [r.affiliation]).filter(Boolean).join(", ")} · <code>{r.repoPath}</code></p>
+                <p className="mt-1 text-xs text-stone-500">{(r.authors?.length ? r.authors : [r.author]).join(", ")} · {orderInstitutions(((r.institutions?.length ? r.institutions : [r.affiliation]).filter(Boolean)) as string[]).join(", ")} · <code>{r.repoPath}</code></p>
               </Card>
             ))}
           </div>

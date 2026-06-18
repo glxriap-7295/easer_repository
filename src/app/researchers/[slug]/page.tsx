@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { ProjectCard } from "@/components/project/ProjectCard";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { apiGet } from "@/lib/client";
-import { slugify } from "@/lib/constants";
+import { slugify, orderInstitutions } from "@/lib/constants";
 import type { RegistryRecord } from "@/lib/types";
 
 export default function ResearcherProfile() {
@@ -27,7 +27,7 @@ export default function ResearcherProfile() {
       setName(authors.find((a) => slugify(a) === slug) || slug);
       const insts = new Set<string>();
       mine.forEach((r) => (r.institutions?.length ? r.institutions : [r.affiliation]).forEach((i) => i && insts.add(i)));
-      setInstitutions([...insts]);
+      setInstitutions(orderInstitutions([...insts]) as string[]);
     }).catch(() => {}).finally(() => setLoading(false));
   }, [slug]);
 

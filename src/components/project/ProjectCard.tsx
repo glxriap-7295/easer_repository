@@ -1,13 +1,13 @@
 "use client";
 import { Card, Badge } from "@/components/ui";
-import { CATEGORIES } from "@/lib/constants";
+import { CATEGORIES, orderInstitutions } from "@/lib/constants";
 import type { RegistryRecord } from "@/lib/types";
 
 // Reusable card for a published project (homepage, search, profiles).
 export function ProjectCard({ r }: { r: RegistryRecord }) {
   const categoryLabel = CATEGORIES.find((c) => c.value === r.category)?.label ?? r.category;
   const authors = r.authors?.length ? r.authors : [r.author].filter(Boolean);
-  const institutions = r.institutions?.length ? r.institutions : [r.affiliation].filter(Boolean);
+  const institutions = orderInstitutions((r.institutions?.length ? r.institutions : [r.affiliation].filter(Boolean)) as string[]);
   return (
     <Card className="flex h-full flex-col p-5 transition hover:shadow-card">
       <div className="flex items-start justify-between gap-2">

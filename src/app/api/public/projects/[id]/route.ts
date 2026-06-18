@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { getProject } from "@/lib/store";
 import { buildSummary, buildReadme } from "@/lib/docgen/generator";
-import { fileCategoryFolder, fileCategoryLabel } from "@/lib/constants";
+import { fileCategoryFolder, fileCategoryLabel, orderInstitutions } from "@/lib/constants";
 import { ok, fail } from "@/lib/api";
 
 export const runtime = "nodejs";
@@ -20,7 +20,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
   return ok({
     id: p.id, title: p.title, description: p.description, purpose: p.purpose,
-    authors: p.authors, institutions: p.institutions,
+    authors: p.authors, institutions: orderInstitutions(p.institutions),
     contactName: p.contactName, contactEmail: p.contactEmail,
     keywords: p.keywords, license: p.license,
     version: p.version || 1,

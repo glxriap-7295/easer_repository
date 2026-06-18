@@ -44,7 +44,7 @@ export default function AddFilesPage() {
     setBusy("publish"); setErr("");
     try {
       await apiPost(`/api/projects/${id}/add-files`, { files }, true);
-      router.push(`/projects/${id}`);
+      router.push(`/dashboard?submitted=1`);
     } catch (e: any) { setErr(e.message); setBusy(""); }
   }
 
@@ -54,7 +54,7 @@ export default function AddFilesPage() {
     <div className="mx-auto max-w-3xl px-4 py-12">
       <Link href="/dashboard" className="text-sm text-accent-700 hover:underline">← My projects</Link>
       <h1 className="mt-2 text-2xl font-bold text-stone-900">Add files{project ? ` — ${project.title}` : ""}</h1>
-      <p className="mt-1 text-sm text-stone-500">New files are added to this project and a new version is published automatically. This does not create a duplicate project.</p>
+      <p className="mt-1 text-sm text-stone-500">New files are added to this project and the project is re-submitted for admin approval. On approval, a new version is published and the documentation regenerates automatically. This does not create a duplicate project.</p>
 
       {err && <div className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{err}</div>}
 
@@ -82,7 +82,7 @@ export default function AddFilesPage() {
         </div>
 
         <div className="mt-6">
-          <Button onClick={publish} disabled={!!busy}>{busy === "publish" ? "Publishing new version…" : "Add files & publish new version"}</Button>
+          <Button onClick={publish} disabled={!!busy}>{busy === "publish" ? "Submitting…" : "Add files & submit for approval"}</Button>
         </div>
       </Card>
     </div>
