@@ -10,7 +10,7 @@ import type { StorageProvider, PutResult } from "./provider";
 // Staged files are deleted automatically after a successful publish.
 const COL = "_uploads";
 const RAW_CHUNK = 600 * 1024; // ~600 KB raw -> ~800 KB base64 (< 1 MiB doc)
-const MAX_UPLOAD_BYTES = Number(process.env.MAX_UPLOAD_MB || 25) * 1024 * 1024;
+const MAX_UPLOAD_BYTES = Number(process.env.MAX_UPLOAD_MB || 1024) * 1024 * 1024;
 
 function docId(key: string): string {
   return key.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 1400);

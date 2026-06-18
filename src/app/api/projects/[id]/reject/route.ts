@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 // Curator rejects or requests changes (requestChanges=true keeps it editable).
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   let user;
-  try { user = await requireRole(req, "curator"); }
+  try { user = await requireRole(req, "admin"); }
   catch (e: any) { return fail(e.message, e.status || 403); }
 
   const body = await req.json().catch(() => ({}));

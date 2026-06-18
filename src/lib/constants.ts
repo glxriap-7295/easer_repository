@@ -4,11 +4,40 @@ export const APP_NAME = "EASER Research Data Hub";
 export const APP_TAGLINE =
   "A unified interface for contributing to the EASER research repository — without needing to know Git.";
 
-export const PARTNERS = [
-  "Universidad de Chile",
-  "SENAPRED",
-  "ANID"
-] as const;
+// Canonical institution display order (Priority 1). Used everywhere institutions
+// are shown so ordering is consistent and never alphabetical.
+export const INSTITUTION_ORDER: { canonical: string; short: string; aliases: string[] }[] = [
+  { canonical: "Universidad de Concepción", short: "UDEC", aliases: ["udec", "concepcion", "concepción", "universidad de concepcion"] },
+  { canonical: "Pontificia Universidad Católica de Chile", short: "PUC", aliases: ["puc", "uc", "catolica", "católica", "pontificia"] },
+  { canonical: "Universidad de Chile", short: "U. de Chile", aliases: ["uchile", "u. de chile", "universidad de chile"] },
+  { canonical: "SENAPRED", short: "SENAPRED", aliases: ["senapred"] },
+  { canonical: "VMB Ingeniería Estructural", short: "VMB", aliases: ["vmb", "vmb ingenieria estructural", "vmb ingeniería estructural"] },
+  { canonical: "ANID", short: "ANID", aliases: ["anid"] }
+];
+
+export const PARTNERS = INSTITUTION_ORDER.map((i) => i.canonical);
+
+/** Rank of an institution name in the canonical order; unknown names sort last. */
+export function institutionRank(name?: string): number {
+  if (!name) return INSTITUTION_ORDER.length + 1;
+  const n = name.trim().toLowerCase();
+  for (let i = 0; i < INSTITUTION_ORDER.length; i++) {
+    const inst = INSTITUTION_ORDER[i];
+    if (n === inst.canonical.toLowerCase() || inst.aliases.some((a) => n === a || n.includes(a))) return i;
+  }
+  return INSTITUTION_ORDER.length;
+}
+
+export function compareInstitutions(a?: string, b?: string): number {
+  const ra = institutionRank(a), rb = institutionRank(b);
+  return ra !== rb ? ra - rb : (a || "").localeCompare(b || "");
+}
+
+/** Order a list of institution names (strings or {name}) by the canonical rule. */
+export function orderInstitutions<T extends string | { name: string }>(list: T[]): T[] {
+  const nameOf = (x: T) => (typeof x === "string" ? x : x.name);
+  return [...list].sort((a, b) => compareInstitutions(nameOf(a), nameOf(b)));
+}
 
 export type Category =
   | "model"

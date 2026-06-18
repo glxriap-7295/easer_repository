@@ -3,7 +3,7 @@ import { getStorageProvider } from "@/lib/storage";
 import { ok, fail, newId } from "@/lib/api";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 // Accept a file upload and store it via the configured StorageProvider.
 // Returns an UploadedFile reference the client attaches to its submission.

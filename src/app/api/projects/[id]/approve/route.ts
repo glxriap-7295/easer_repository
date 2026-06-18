@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 // Curator approval — publishes the project (project-centric layout) to GitHub.
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   let user;
-  try { user = await requireRole(req, "curator"); }
+  try { user = await requireRole(req, "admin"); }
   catch (e: any) { return fail(e.message, e.status || 403); }
 
   const p = await getProject(params.id);

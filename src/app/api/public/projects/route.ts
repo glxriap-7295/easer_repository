@@ -1,5 +1,6 @@
 import { listProjects } from "@/lib/store";
 import { ok } from "@/lib/api";
+import { orderInstitutions } from "@/lib/constants";
 import type { Project } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -10,7 +11,7 @@ function toCard(p: Project) {
   return {
     id: p.id, title: p.title, description: p.description,
     authors: p.authors.map((a) => a.name),
-    institutions: p.institutions.map((i) => i.name),
+    institutions: orderInstitutions(p.institutions).map((i) => i.name),
     keywords: p.keywords, version: p.version || 1,
     fileCount: p.files.length, githubUrl: p.githubCommitUrl,
     publishedAt: p.publishedAt || p.updatedAt,
