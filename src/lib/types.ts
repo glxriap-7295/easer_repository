@@ -167,3 +167,39 @@ export interface RepoTreeNode {
   size?: number;
   sha: string;
 }
+
+/* ───────────────────────── Institutional site (Team + News) ───────────────────────── */
+export type TeamGroup = "director" | "pi" | "team";
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  group: TeamGroup;          // director | principal investigator | full team
+  role: string;              // e.g. "Director", "Research Assistant", "Journalist"
+  institution?: string;
+  photoURL?: string;
+  linkedin?: string;
+  bio?: string;
+  order: number;
+  featured?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NewsPost {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  coverImage?: string;
+  content: string;           // markdown / rich text
+  authorName?: string;
+  authorId?: string;
+  tags: string[];
+  status: "draft" | "published";
+  pinned?: boolean;
+  externalLinks?: string[];
+  publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}

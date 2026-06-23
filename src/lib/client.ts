@@ -39,3 +39,10 @@ export async function apiPatch<T = any>(url: string, body: unknown): Promise<T> 
   if (!json.ok) throw new Error(json.error || "Request failed");
   return json.data;
 }
+
+export async function apiDelete<T = any>(url: string): Promise<T> {
+  const res = await fetch(url, { method: "DELETE", headers: await authHeaders(false) });
+  const json = await res.json();
+  if (!json.ok) throw new Error(json.error || "Request failed");
+  return json.data;
+}

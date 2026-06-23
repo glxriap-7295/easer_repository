@@ -65,6 +65,8 @@ export function UserMenu() {
             <Item href="/profile" onClick={() => setOpen(false)}>{t("common.profile")}</Item>
             {isCurator && <Item href="/admin/projects" onClick={() => setOpen(false)}>{t("common.reviewQueue")}</Item>}
             {isAdmin && <Item href="/admin/users" onClick={() => setOpen(false)}>{t("common.userManagement")}</Item>}
+            {isAdmin && <Item href="/admin/team" onClick={() => setOpen(false)}>Team Management</Item>}
+            {isAdmin && <Item href="/admin/news" onClick={() => setOpen(false)}>News Management</Item>}
             <button onClick={doLogout} className="block w-full px-4 py-2 text-left text-stone-700 hover:bg-stone-100" role="menuitem">{t("common.logout")}</button>
           </nav>
         </div>
