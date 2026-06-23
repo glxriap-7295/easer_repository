@@ -9,11 +9,14 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const { t } = useT();
-  const active = (href: string) => pathname === href || pathname.startsWith(href + "/");
+  const active = (href: string) => href === "/" ? pathname === "/" : (pathname === href || pathname.startsWith(href + "/"));
+  // Institutional navigation. "Our Work" routes into the preserved repository.
   const links = [
-    { href: "/browse", label: t("common.browse") },
-    { href: "/search", label: t("common.search") },
-    { href: "/docs", label: t("common.documentation") }
+    { href: "/", label: t("common.home") },
+    { href: "/our-work", label: t("common.ourWork") },
+    { href: "/team", label: t("common.team") },
+    { href: "/news", label: t("common.news") },
+    { href: "/contact", label: t("common.contact") }
   ];
 
   return (

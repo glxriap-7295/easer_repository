@@ -163,3 +163,55 @@ export async function listProjects(status?: string): Promise<Project[]> {
   }
   return rows.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
+
+/* ───────────────────────── Team + News (institutional site) ───────────────────────── */
+import type { TeamMember, NewsPost } from "./types";
+
+const TEAM = "team";
+const NEWS = "news";
+const memTeam = new Map<string, TeamMember>();
+const memNews = new Map<string, NewsPost>();
+
+export async function listTeam(): Promise<TeamMember[]> {
+  const db = getAdminDb();
+  const rows = db ? (await db.collection(TEAM).get()).docs.map((d) => d.data() as TeamMember) : [...memTeam.values()];
+  return rows.sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.name.localeCompare(b.name));
+}
+export async function getTeamMember(id: string): Promise<TeamMember | null> {
+  const db = getAdminDb();
+  if (db) { const s = await db.collection(TEAM).doc(id).get(); return s.exists ? (s.data() as TeamMember) : null; }
+  return memTeam.get(id) ?? null;
+}
+export async function saveTeamMember(m: TeamMember): Promise<TeamMember> {
+  const db = getAdminDb();
+  if (db) await db.collection(TEAM).doc(m.id).set(stripUndefined(m)); else memTeam.set(m.id, m);
+  return m;
+}
+export async function deleteTeamMember(id: string): Promise<void> {
+  const db = getAdminDb();
+  if (db) await db.collection(TEAM).doc(id).delete(); else memTeam.delete(id);
+}
+
+export async function listNews(opts: { publishedOnly?: boolean } = {}): Promise<NewsPost[]> {
+  const db = getAdminDb();
+  let rows = db ? (await db.collection(NEWS).get()).docs.map((d) => d.data() as NewsPost) : [...memNews.values()];
+  if (opts.publishedOnly) rows = rows.filter((n) => n.status === "published");
+  return rows.sort((a, b) => (b.publishedAt || b.createdAt).localeCompare(a.publishedAt || a.createdAt));
+}
+export async function getNews(id: string): Promise<NewsPost | null> {
+  const db = getAdminDb();
+  if (db) { const s = await db.collection(NEWS).doc(id).get(); return s.exists ? (s.data() as NewsPost) : null; }
+  return memNews.get(id) ?? null;
+}
+export async function getNewsBySlug(slug: string): Promise<NewsPost | null> {
+  return (await listNews()).find((n) => n.slug === slug) ?? null;
+}
+export async function saveNews(n: NewsPost): Promise<NewsPost> {
+  const db = getAdminDb();
+  if (db) await db.collection(NEWS).doc(n.id).set(stripUndefined(n)); else memNews.set(n.id, n);
+  return n;
+}
+export async function deleteNews(id: string): Promise<void> {
+  const db = getAdminDb();
+  if (db) await db.collection(NEWS).doc(id).delete(); else memNews.delete(id);
+}

@@ -52,6 +52,18 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Team members — public read; server (Admin SDK) is the only writer.
+    match /team/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // News posts — public read; server (Admin SDK) is the only writer.
+    match /news/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Contributor records (public profiles, Phase 6).
     match /contributors/{id} {
       allow read: if true;

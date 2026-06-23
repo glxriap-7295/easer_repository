@@ -209,3 +209,44 @@ export function projectFolderName(title: string): string {
     .trim()
     .slice(0, 80) || "Untitled Project";
 }
+
+/* ───────────── EASER research content (from the 2024 research proposal) ───────────── */
+export const EASER_TAGLINE = {
+  en: "Research for a seismically resilient Chile",
+  es: "Investigación para un Chile sísmicamente resiliente"
+};
+
+export const EASER_ABSTRACT = {
+  en: "EASER (Evolution Assessment of Seismic Risk) is an ANID-funded research initiative developing a methodology to assess how seismic risk evolves over time. By integrating seismology, geotechnical and structural engineering, EASER studies the time-dependency of seismic hazard, structural vulnerability and urban exposure to help public and private stakeholders make informed, time-aware risk-mitigation decisions for resilient communities.",
+  es: "EASER (Evolution Assessment of Seismic Risk) es una iniciativa de investigación financiada por ANID que desarrolla una metodología para evaluar cómo evoluciona el riesgo sísmico en el tiempo. Integrando sismología e ingeniería geotécnica y estructural, EASER estudia la dependencia temporal de la amenaza sísmica, la vulnerabilidad estructural y la exposición urbana para apoyar decisiones informadas de mitigación del riesgo."
+};
+
+// Four research lines (RL1–RL4) derived directly from the proposal.
+export const RESEARCH_THEMES: { title: { en: string; es: string }; desc: { en: string; es: string } }[] = [
+  {
+    title: { en: "Time-evolution of seismic hazard", es: "Evolución temporal de la amenaza sísmica" },
+    desc: { en: "Time-dependent probabilistic hazard models for the Andean subduction context — earthquake recurrence, source and path characteristics, and site-response effects.", es: "Modelos probabilísticos de amenaza dependientes del tiempo para el contexto de subducción andino: recurrencia, características de la fuente y del trayecto, y efectos de sitio." }
+  },
+  {
+    title: { en: "Time-evolution of seismic vulnerability", es: "Evolución temporal de la vulnerabilidad" },
+    desc: { en: "Time-dependent fragility functions for Chilean reinforced-concrete and masonry typologies, accounting for cumulative earthquake damage and material degradation.", es: "Funciones de fragilidad dependientes del tiempo para tipologías chilenas de hormigón armado y albañilería, considerando daño acumulado y degradación de materiales." }
+  },
+  {
+    title: { en: "Time-evolution of exposure", es: "Evolución temporal de la exposición" },
+    desc: { en: "Modelling how urban residential exposure changes over time using aerophotogrammetry, satellite imagery and public building data — with forecasting capability.", es: "Modelación de cómo cambia la exposición residencial urbana en el tiempo usando aerofotogrametría, imágenes satelitales y datos públicos de edificaciones, con capacidad de pronóstico." }
+  },
+  {
+    title: { en: "Computational tools for time-dependent risk", es: "Herramientas computacionales para el riesgo dependiente del tiempo" },
+    desc: { en: "The EASER model: open, transparent computational tools that integrate hazard, vulnerability and exposure to evaluate risk-mitigation strategies, published openly.", es: "El modelo EASER: herramientas computacionales abiertas y transparentes que integran amenaza, vulnerabilidad y exposición para evaluar estrategias de mitigación, publicadas abiertamente." }
+  }
+];
+
+export const EASER_OBJECTIVES: { en: string; es: string }[] = [
+  { en: "Develop time-dependent seismic hazard models within the Andean subduction context.", es: "Desarrollar modelos de amenaza sísmica dependientes del tiempo en el contexto de subducción andino." },
+  { en: "Evaluate the evolution of structural vulnerability through analytical and experimental approaches.", es: "Evaluar la evolución de la vulnerabilidad estructural mediante enfoques analíticos y experimentales." },
+  { en: "Assess the temporal evolution of exposure from public databases and satellite image recognition.", es: "Evaluar la evolución temporal de la exposición a partir de bases de datos públicas y reconocimiento de imágenes satelitales." },
+  { en: "Build computational tools to evaluate time-dependent seismic risk and propagate its uncertainties.", es: "Construir herramientas computacionales para evaluar el riesgo sísmico dependiente del tiempo y propagar sus incertidumbres." }
+];
+
+// Case-study regions (study areas only — EASER represents Chile as a whole).
+export const STUDY_AREAS = ["Concepción", "Santiago", "Viña del Mar"];
