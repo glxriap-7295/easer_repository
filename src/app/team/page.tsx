@@ -4,6 +4,7 @@ import { Card } from "@/components/ui";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { apiGet } from "@/lib/client";
 import { INSTITUTION_ORDER, institutionRank } from "@/lib/constants";
+import { PartnerLogos } from "@/components/InstitutionLogo";
 import type { TeamMember } from "@/lib/types";
 
 function initials(name: string) {
@@ -105,11 +106,7 @@ export default function TeamPage() {
           {/* Partners */}
           <section className="mt-12">
             <h2 className="text-xl font-bold text-stone-900">{L === "es" ? "Instituciones participantes" : "Partners"}</h2>
-            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-              {INSTITUTION_ORDER.map((i) => (
-                <Card key={i.canonical} className="flex items-center justify-center p-4 text-center text-sm font-medium text-stone-700">{i.short}</Card>
-              ))}
-            </div>
+            <PartnerLogos className="mt-5" />
             <p className="mt-3 text-xs text-stone-500">{INSTITUTION_ORDER.map((i) => i.canonical).join(" · ")}</p>
           </section>
         </>

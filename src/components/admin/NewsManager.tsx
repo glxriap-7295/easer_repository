@@ -23,6 +23,11 @@ export function NewsManager() {
     try { await apiPost("/api/admin/news", { title: "Untitled post", status: "draft", content: "" }, true); load(); }
     catch (e: any) { setErr(e.message); } finally { setBusy(""); }
   }
+  async function sync() {
+    setBusy("sync"); setErr("");
+    try { const r = await apiPost<{ message: string }>("/api/admin/sync-news", {}, true); load(); alert(r.message); }
+    catch (e: any) { setErr(e.message); } finally { setBusy(""); }
+  }
   async function save(p: NewsPost) {
     setBusy(p.id); setErr("");
     try { await apiPatch(`/api/admin/news/${p.id}`, { ...p, tags: Array.isArray(p.tags) ? p.tags : String(p.tags || "").split(",").map((t) => t.trim()).filter(Boolean) }); load(); }
@@ -40,7 +45,7 @@ export function NewsManager() {
     <div>
       <div className="flex items-center justify-between">
         <p className="text-sm text-stone-500">{posts.length} post(s)</p>
-        <Button onClick={add} disabled={!!busy}>+ New post</Button>
+        <div className="flex gap-2"><Button variant="secondary" disabled={!!busy} onClick={sync}>Sync official news</Button><Button onClick={add} disabled={!!busy}>+ New post</Button></div>
       </div>
       {err && <Card className="mt-3 border-red-200 bg-red-50 p-3 text-sm text-red-700">{err}</Card>}
       {loading ? <p className="mt-4 text-stone-500">Loading…</p> : (

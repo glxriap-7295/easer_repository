@@ -6,13 +6,13 @@ export const APP_TAGLINE =
 
 // Canonical institution display order (Priority 1). Used everywhere institutions
 // are shown so ordering is consistent and never alphabetical.
-export const INSTITUTION_ORDER: { canonical: string; short: string; aliases: string[] }[] = [
-  { canonical: "Universidad de Concepción", short: "UDEC", aliases: ["udec", "concepcion", "concepción", "universidad de concepcion"] },
-  { canonical: "Pontificia Universidad Católica de Chile", short: "PUC", aliases: ["puc", "uc", "catolica", "católica", "pontificia"] },
-  { canonical: "Universidad de Chile", short: "U. de Chile", aliases: ["uchile", "u. de chile", "universidad de chile"] },
-  { canonical: "SENAPRED", short: "SENAPRED", aliases: ["senapred"] },
-  { canonical: "VMB Ingeniería Estructural", short: "VMB", aliases: ["vmb", "vmb ingenieria estructural", "vmb ingeniería estructural"] },
-  { canonical: "ANID", short: "ANID", aliases: ["anid"] }
+export const INSTITUTION_ORDER: { canonical: string; short: string; aliases: string[]; logoPath: string }[] = [
+  { canonical: "Universidad de Concepción", short: "UDEC", aliases: ["udec", "concepcion", "concepción", "universidad de concepcion"], logoPath: "/logos/udec-logo.svg" },
+  { canonical: "Pontificia Universidad Católica de Chile", short: "PUC", aliases: ["puc", "uc", "catolica", "católica", "pontificia"], logoPath: "/logos/puc-logo.svg" },
+  { canonical: "Universidad de Chile", short: "U. de Chile", aliases: ["uchile", "u. de chile", "universidad de chile"], logoPath: "/logos/uchile-logo.svg" },
+  { canonical: "SENAPRED", short: "SENAPRED", aliases: ["senapred"], logoPath: "/logos/senapred-logo.svg" },
+  { canonical: "VMB Ingeniería Estructural", short: "VMB", aliases: ["vmb", "vmb ingenieria estructural", "vmb ingeniería estructural"], logoPath: "/logos/vmb-logo.svg" },
+  { canonical: "ANID", short: "ANID", aliases: ["anid"], logoPath: "/logos/anid-logo.svg" }
 ];
 
 export const PARTNERS = INSTITUTION_ORDER.map((i) => i.canonical);
@@ -122,9 +122,15 @@ export function authorSlug(name: string): string {
  * Published filename convention: <projectslug>_<primaryauthor>_<original>.
  * Example: tsunami-hazard-study_jdoe_report.pdf
  */
+export function authorInitials(name: string): string {
+  const parts = (name || "").trim().split(/\s+/).filter(Boolean);
+  const ini = parts.slice(0, 3).map((p) => p[0]).join("").toLowerCase().replace(/[^a-z0-9]/g, "");
+  return ini || "x";
+}
+
 export function contributionFileName(projectSlug: string, primaryAuthor: string, original: string): string {
   const safeOriginal = original.replace(/[^a-zA-Z0-9._-]+/g, "_");
-  return `${projectSlug}_${authorSlug(primaryAuthor)}_${safeOriginal}`;
+  return `${projectSlug}_${authorInitials(primaryAuthor)}_${safeOriginal}`;
 }
 
 /* ───────────── Official EASER project facts (from proyectoeaser.cl) ─────────────
@@ -250,3 +256,10 @@ export const EASER_OBJECTIVES: { en: string; es: string }[] = [
 
 // Case-study regions (study areas only — EASER represents Chile as a whole).
 export const STUDY_AREAS = ["Concepción", "Santiago", "Viña del Mar"];
+
+export function institutionLogo(name?: string): string | undefined {
+  if (!name) return undefined;
+  const n = name.trim().toLowerCase();
+  const hit = INSTITUTION_ORDER.find((i) => i.canonical.toLowerCase() === n || i.aliases.some((a) => n === a || n.includes(a)));
+  return hit?.logoPath;
+}
