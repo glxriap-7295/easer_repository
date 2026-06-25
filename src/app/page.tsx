@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LinkButton, Card, Badge } from "@/components/ui";
 import { ProjectCard } from "@/components/project/ProjectCard";
+import { PartnerLogos } from "@/components/InstitutionLogo";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { apiGet } from "@/lib/client";
 import {
@@ -147,17 +148,24 @@ export default function Home() {
         </section>
       )}
 
+      {/* LATEST UPLOADS */}
+      {projects.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 py-16">
+          <div className="flex items-end justify-between">
+            <h2 className="text-2xl font-bold text-stone-900">{L === "es" ? "Últimas publicaciones" : "Latest uploads"}</h2>
+            <Link href="/browse" className="text-sm text-accent-700 hover:underline">{L === "es" ? "Ver todo" : "View all"} →</Link>
+          </div>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {projects.slice(0, 6).map((r) => <ProjectCard key={r.id} r={r} />)}
+          </div>
+        </section>
+      )}
+
       {/* PARTNERS */}
       <section className="section-alt">
         <div className="mx-auto max-w-6xl px-4 py-16">
           <h2 className="text-2xl font-bold text-stone-900">{L === "es" ? "Instituciones participantes" : "Participating institutions"}</h2>
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {INSTITUTION_ORDER.map((inst) => (
-              <Card key={inst.canonical} className="flex items-center justify-center p-4 text-center">
-                <span className="text-sm font-medium text-stone-700">{inst.short}</span>
-              </Card>
-            ))}
-          </div>
+          <PartnerLogos className="mt-6" />
           <p className="mt-3 text-xs text-stone-500">{INSTITUTION_ORDER.map((i) => i.canonical).join(" · ")}</p>
         </div>
       </section>

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { INSTITUTION_ORDER, EASER_INFO } from "@/lib/constants";
+import { PartnerLogos } from "@/components/InstitutionLogo";
 
 export default function ContactPage() {
   const { lang } = useT();
@@ -35,6 +36,7 @@ export default function ContactPage() {
       </div>
 
       <h2 className="mt-10 text-xl font-bold text-stone-900">{L === "es" ? "Instituciones participantes" : "Participating institutions"}</h2>
+      <PartnerLogos className="mt-4" />
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         {INSTITUTION_ORDER.map((i) => (
           <div key={i.canonical} className="rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-stone-700">{i.canonical}</div>

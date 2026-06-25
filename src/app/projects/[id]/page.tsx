@@ -7,8 +7,10 @@ import { Markdown } from "@/components/Markdown";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { apiGet } from "@/lib/client";
 import { FILE_CATEGORIES } from "@/lib/constants";
+import { PDFViewer } from "@/components/PDFViewer";
+import { InstitutionLogo } from "@/components/InstitutionLogo";
 
-interface Resource { name: string; category: string; categoryLabel: string; folder: string; metadata: Record<string, string>; url?: string; }
+interface Resource { name: string; category: string; categoryLabel: string; folder: string; metadata: Record<string, string>; size?: number; isPdf?: boolean; downloadUrl?: string; githubUrl?: string; }
 interface PublicProject {
   id: string; title: string; description: string; purpose: string;
   authors: { name: string; orcid?: string }[]; institutions: { name: string; department?: string }[];
@@ -31,6 +33,7 @@ export default function ProjectPage() {
   if (err) return <div className="mx-auto max-w-3xl px-4 py-16"><Card className="border-amber-200 bg-amber-50 p-4 text-amber-800">{err} — <Link className="underline" href="/browse">{t("common.browse")}</Link></Card></div>;
   if (!p) return <div className="mx-auto max-w-3xl px-4 py-16 text-stone-500">{t("common.loading")}</div>;
 
+  const featuredPdf = p.resources.find((r) => r.category === "report" && r.isPdf && r.downloadUrl);
   const groups = FILE_CATEGORIES.map((c) => ({ ...c, items: p.resources.filter((r) => r.category === c.value) })).filter((g) => g.items.length);
 
   return (
@@ -47,7 +50,7 @@ export default function ProjectPage() {
       </div>
       <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-stone-600">
         <span><span className="font-medium text-stone-500">Authors:</span> {p.authors.map((a) => a.name).join(", ") || "—"}</span>
-        <span><span className="font-medium text-stone-500">Institutions:</span> {p.institutions.map((i) => i.name).join(", ") || "—"}</span>
+        <span className="flex flex-wrap items-center gap-x-3 gap-y-1"><span className="font-medium text-stone-500">Institutions:</span> {p.institutions.length ? p.institutions.map((i) => <InstitutionLogo key={i.name} name={i.name} className="h-6" showName />) : "—"}</span>
         {p.publishedAt && <span><span className="font-medium text-stone-500">Published:</span> {new Date(p.publishedAt).toLocaleDateString()}</span>}
       </div>
       {p.keywords?.length > 0 && <div className="mt-3 flex flex-wrap gap-1">{p.keywords.map((k) => <Badge key={k}>{k}</Badge>)}</div>}
@@ -55,6 +58,16 @@ export default function ProjectPage() {
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]">
         {/* Main */}
         <div>
+          {/* Featured paper (PDF) */}
+          {featuredPdf && (
+            <div className="mb-6">
+              <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-stone-900">Featured paper</h2>
+                <a href="#resources" className="rounded-lg bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-800">Explore the full project →</a>
+              </div>
+              <PDFViewer url={featuredPdf.downloadUrl!} fileName={featuredPdf.name} title={p.title} />
+            </div>
+          )}
           {/* Summary / README tabs */}
           <Card className="p-0">
             <div className="flex border-b border-stone-200">
@@ -65,7 +78,7 @@ export default function ProjectPage() {
           </Card>
 
           {/* Categorized resources */}
-          <h2 className="mt-8 text-xl font-bold text-stone-900">Project resources</h2>
+          <h2 id="resources" className="mt-8 scroll-mt-20 text-xl font-bold text-stone-900">Project resources</h2>
           <p className="mt-1 text-sm text-stone-500">Files grouped by type. {p.githubUrl && <a href={p.githubUrl} target="_blank" rel="noreferrer" className="text-accent-700 hover:underline">Open in repository →</a>}</p>
           <div className="mt-4 space-y-4">
             {groups.map((g) => (
@@ -78,7 +91,10 @@ export default function ProjectPage() {
                 <ul className="mt-3 space-y-2">
                   {g.items.map((r, i) => (
                     <li key={i} className="rounded-lg border border-stone-100 px-3 py-2 text-sm">
-                      <span className="font-mono text-stone-800">{r.name}</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate font-mono text-stone-800">{r.name}</span>
+                        {r.downloadUrl && <a href={r.downloadUrl} download={r.name} className="shrink-0 text-xs font-medium text-accent-700 hover:underline">Download</a>}
+                      </div>
                       {Object.entries(r.metadata).filter(([, v]) => v).length > 0 && (
                         <span className="mt-1 block text-xs text-stone-500">
                           {Object.entries(r.metadata).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join(" · ")}
@@ -99,6 +115,13 @@ export default function ProjectPage() {
             <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-500">Where to start</h3>
             <p className="mt-2 text-sm text-stone-700">Read the <strong>AI Summary</strong>, then open the resource folder most relevant to your work.</p>
           </Card>
+          {p.githubUrl && (
+            <Card className="p-4">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-500">Download</h3>
+              <p className="mt-2 text-sm text-stone-700">Individual files can be downloaded from the resource list. The full project lives in the repository:</p>
+              <a href={p.githubUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block rounded-lg bg-brand-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-800">Open in repository ↗</a>
+            </Card>
+          )}
           <Card className="p-4">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-stone-500">Project metadata</h3>
             <dl className="mt-2 space-y-1 text-sm text-stone-700">
