@@ -7,12 +7,12 @@ export const APP_TAGLINE =
 // Canonical institution display order (Priority 1). Used everywhere institutions
 // are shown so ordering is consistent and never alphabetical.
 export const INSTITUTION_ORDER: { canonical: string; short: string; aliases: string[]; logoPath: string }[] = [
-  { canonical: "Universidad de Concepción", short: "UDEC", aliases: ["udec", "concepcion", "concepción", "universidad de concepcion"], logoPath: "/logos/udec-logo.svg" },
-  { canonical: "Pontificia Universidad Católica de Chile", short: "PUC", aliases: ["puc", "uc", "catolica", "católica", "pontificia"], logoPath: "/logos/puc-logo.svg" },
-  { canonical: "Universidad de Chile", short: "U. de Chile", aliases: ["uchile", "u. de chile", "universidad de chile"], logoPath: "/logos/uchile-logo.svg" },
-  { canonical: "SENAPRED", short: "SENAPRED", aliases: ["senapred"], logoPath: "/logos/senapred-logo.svg" },
-  { canonical: "VMB Ingeniería Estructural", short: "VMB", aliases: ["vmb", "vmb ingenieria estructural", "vmb ingeniería estructural"], logoPath: "/logos/vmb-logo.svg" },
-  { canonical: "ANID", short: "ANID", aliases: ["anid"], logoPath: "/logos/anid-logo.svg" }
+  { canonical: "Universidad de Concepción", short: "UDEC", aliases: ["udec", "concepcion", "concepción", "universidad de concepcion"], logoPath: "/logos/udec.png" },
+  { canonical: "Pontificia Universidad Católica de Chile", short: "PUC", aliases: ["puc", "uc", "catolica", "católica", "pontificia"], logoPath: "/logos/puc.png" },
+  { canonical: "Universidad de Chile", short: "U. de Chile", aliases: ["uchile", "u. de chile", "universidad de chile"], logoPath: "/logos/uchile.jpg" },
+  { canonical: "SENAPRED", short: "SENAPRED", aliases: ["senapred"], logoPath: "/logos/senapred.png" },
+  { canonical: "VMB Ingeniería Estructural", short: "VMB", aliases: ["vmb", "vmb ingenieria estructural", "vmb ingeniería estructural"], logoPath: "/logos/vmb.png" },
+  { canonical: "ANID", short: "ANID", aliases: ["anid"], logoPath: "/logos/anid.png" }
 ];
 
 export const PARTNERS = INSTITUTION_ORDER.map((i) => i.canonical);

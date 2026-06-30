@@ -4,6 +4,7 @@ import { compareInstitutions } from "@/lib/constants";
 import type { RegistryRecord } from "@/lib/types";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic"; // always read fresh data (no build-time caching)
 
 // Distinct values for building search filter dropdowns.
 export async function GET() {

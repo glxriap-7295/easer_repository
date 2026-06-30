@@ -11,7 +11,7 @@ interface ProjectCardData {
 }
 
 export default function BrowsePage() {
-  const { t } = useT();
+  const { t, lang } = useT();
   const [projects, setProjects] = useState<ProjectCardData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +25,9 @@ export default function BrowsePage() {
       {loading ? <p className="mt-8 text-stone-500">{t("common.loading")}</p>
         : !projects.length ? (
           <Card className="mt-8 p-8 text-center text-sm text-stone-600">
-            No published projects yet. <Link href="/contribute" className="text-accent-700 underline">Contribute the first one</Link>.
+            {lang === "es"
+              ? "Aún no existen proyectos publicados. Los proyectos aprobados por el equipo EASER aparecerán aquí próximamente."
+              : "No projects have been published yet. Projects approved by the EASER team will appear here soon."}
           </Card>
         ) : (
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

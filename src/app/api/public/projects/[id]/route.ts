@@ -8,6 +8,7 @@ import {
 import { ok, fail } from "@/lib/api";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic"; // always read fresh data (no build-time caching)
 const PUBLIC = ["approved", "published"];
 
 const OWNER = process.env.GITHUB_OWNER || "glxriap-7295";

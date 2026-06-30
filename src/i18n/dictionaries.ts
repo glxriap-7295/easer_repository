@@ -71,7 +71,7 @@ export const en = {
     allAuthors: "All authors", projects: "Published projects", repoFiles: "Repository files",
     noResults: "No results.", apply: "Search", clear: "Clear"
   },
-  docs: { title: "Documentation", subtitle: "Auto-generated, curator-reviewed documentation for every published project.", empty: "No published documentation yet." },
+  docs: { title: "Documentation", subtitle: "Auto-generated, curator-reviewed documentation for every published project.", empty: "No projects have been published yet. Documentation for projects approved by the EASER team will appear here soon." },
   researchers: { title: "Researchers", subtitle: "Contributors to the EASER repository.", contributions: "contributions", profileOf: "Projects by" },
   admin: {
     usersTitle: "User Management", reviewTitle: "Review queue", decision: "Decision",
@@ -158,7 +158,7 @@ export const es: Dict = {
     allAuthors: "Todos los autores", projects: "Proyectos publicados", repoFiles: "Archivos del repositorio",
     noResults: "Sin resultados.", apply: "Buscar", clear: "Limpiar"
   },
-  docs: { title: "Documentación", subtitle: "Documentación generada automáticamente y revisada por curadores para cada proyecto publicado.", empty: "Aún no hay documentación publicada." },
+  docs: { title: "Documentación", subtitle: "Documentación generada automáticamente y revisada por curadores para cada proyecto publicado.", empty: "Aún no existen proyectos publicados. La documentación de los proyectos aprobados por el equipo EASER aparecerá aquí próximamente." },
   researchers: { title: "Investigadores", subtitle: "Contribuyentes del repositorio EASER.", contributions: "contribuciones", profileOf: "Proyectos de" },
   admin: {
     usersTitle: "Gestión de usuarios", reviewTitle: "Cola de revisión", decision: "Decisión",
