@@ -1,6 +1,7 @@
 import { listProjects, listTeam, listNews } from "@/lib/store";
 import { ok } from "@/lib/api";
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic"; // always read fresh data (no build-time caching)
 
 // Real institutional impact numbers derived from repository + site data.
 export async function GET() {

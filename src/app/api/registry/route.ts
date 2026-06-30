@@ -4,6 +4,7 @@ import { ok } from "@/lib/api";
 import type { RegistryRecord } from "@/lib/types";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic"; // always read fresh data (no build-time caching)
 
 // Public list of published projects/contributions. Backward compatible: with no
 // query params it returns the full array. Optional filters: q, category, year,

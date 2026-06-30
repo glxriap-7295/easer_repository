@@ -4,6 +4,7 @@ import { orderInstitutions } from "@/lib/constants";
 import type { Project } from "@/lib/types";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic"; // always read fresh data (no build-time caching)
 
 const PUBLIC = ["approved", "published"];
 
