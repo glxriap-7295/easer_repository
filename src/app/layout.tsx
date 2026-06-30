@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Source_Serif_4 } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { LanguageProvider } from "@/components/i18n/LanguageProvider";
 import { AuthProvider } from "@/components/auth/AuthProvider";
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Footer />
           </AuthProvider>
         </LanguageProvider>
+        <Analytics />
       </body>
     </html>
   );
