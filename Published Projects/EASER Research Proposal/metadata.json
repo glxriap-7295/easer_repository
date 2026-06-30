@@ -1,0 +1,46 @@
+{
+  "schema": "easer-project/2",
+  "id": "p_mr0y9obtc5bvo4",
+  "title": "EASER Research Proposal",
+  "folder": "EASER Research Proposal",
+  "slug": "easer-research-proposal",
+  "description": "The project's response to this multifactorial challenge involves fostering interdisciplinary collaboration among Chilean universities,\nprivate institutions, government agencies, and international partners. EASER aims to develop a methodology for assessing the time\nevolution of seismic risk, focusing on residential buildings within the Andean seismotectonic environment. The resulting\ncomputational tools will empower stakeholders to make rational, time-dependent risk-management decisions, bridging the gap left\nby conventional stationary assessments and ensuring the resilience of assets in the face of evolving seismic hazards.",
+  "purpose": "Our goal is to assemble a cohesive, multidisciplinary group of researchers to advance the knowledge on the time dependency of\nseismic risk and to promote an environment that fosters collaboration and innovation, providing an international academic\nenvironment to train young earthquake scientists at the highest level. We will integrate seismology, geotechnical, and structural\nengineering to quantify the interrelation between seismic hazard time-dependency, seismic vulnerability time-dependency, and the\nexposure evolution over time, with epistemic and aleatory uncertainty considered in every step. Our results will ultimately allow the\ndevelopment of advanced computational tools to aid both public and private stakeholders in assessing more realistically the seismic\nrisk in residential structures and communities within the Andean seismotectonic environment and making informed decisions to\nmitigate these risks.",
+  "authors": [
+    {
+      "name": "PROYECTO EASER",
+      "email": "easer.data@gmail.com",
+      "orcid": ""
+    }
+  ],
+  "institutions": [
+    {
+      "name": "Universidad de Concepción",
+      "department": ""
+    },
+    {
+      "name": "Universidad de Chile",
+      "department": ""
+    },
+    {
+      "name": "Pontificia Universidad Católica de Chile",
+      "department": ""
+    }
+  ],
+  "contact": {
+    "name": "EASER",
+    "email": "easer.data@gmail.com"
+  },
+  "keywords": [],
+  "license": null,
+  "version": 1,
+  "files": [
+    {
+      "name": "RESEARCH-PROPOSAL-2024.pdf",
+      "category": "presentation",
+      "path": "Published Projects/EASER Research Proposal/Presentations/easer-research-proposal_pe_RESEARCH-PROPOSAL-2024.pdf"
+    }
+  ],
+  "publishedAt": "2026-06-30T17:58:30.515Z",
+  "source": "easer-research-data-hub"
+}
