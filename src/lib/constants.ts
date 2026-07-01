@@ -138,14 +138,20 @@ export function contributionFileName(projectSlug: string, primaryAuthor: string,
    official EASER website is used here. */
 export const EASER_INFO = {
   official: "https://www.proyectoeaser.cl/",
-  contact: "contacto@proyectoeaser.cl",
+  contact: "easer@udec.cl",
   instagram: "https://www.instagram.com/proyecto.easer/",
+  social: {
+    instagram: "https://www.instagram.com/proyecto.easer/",
+    linkedin: "",
+    youtube: "",
+    spotify: ""
+  } as Record<string, string>,
   location: "Concepción, Chile",
   name: "EASER — Evolution Assessment of Seismic Risk",
   aboutTitle: { en: "About the EASER project", es: "Sobre el proyecto EASER" },
   mission: {
-    en: "Protecting critical infrastructure against seismic disasters through advanced technology and tailored solutions.",
-    es: "Protegiendo infraestructuras críticas contra desastres sísmicos mediante tecnología avanzada y soluciones personalizadas."
+    en: "EASER is a collaborative, ANID-funded research initiative advancing the scientific understanding of how seismic risk evolves over time — and sharing open data, computational tools and knowledge to strengthen infrastructure resilience in Chile.",
+    es: "EASER es una iniciativa de investigación colaborativa financiada por ANID que avanza en la comprensión científica de cómo evoluciona el riesgo sísmico en el tiempo, compartiendo datos abiertos, herramientas computacionales y conocimiento para fortalecer la resiliencia de la infraestructura en Chile."
   },
   linesTitle: { en: "Lines of development", es: "Líneas de desarrollo" },
   lines: [
@@ -198,7 +204,12 @@ export const FILE_METADATA_FIELDS: Record<FileCategory, { key: string; label: st
     { key: "coordinateSystem", label: "Coordinate system" },
     { key: "spatialCoverage", label: "Spatial coverage" }
   ],
-  report: [],
+  report: [
+    { key: "authors", label: "Authors" },
+    { key: "journal", label: "Journal / venue" },
+    { key: "doi", label: "DOI" },
+    { key: "publicationLink", label: "Official publication link" }
+  ],
   presentation: [],
   documentation: [],
   other: []
@@ -262,4 +273,18 @@ export function institutionLogo(name?: string): string | undefined {
   const n = name.trim().toLowerCase();
   const hit = INSTITUTION_ORDER.find((i) => i.canonical.toLowerCase() === n || i.aliases.some((a) => n === a || n.includes(a)));
   return hit?.logoPath;
+}
+
+/* ───────────── Team role groups (Priority 5) — ordered, dynamic taxonomy ───────────── */
+export const TEAM_GROUPS: { value: string; order: number; label: { en: string; es: string } }[] = [
+  { value: "director", order: 1, label: { en: "Director", es: "Director" } },
+  { value: "pi", order: 2, label: { en: "Principal Investigators", es: "Investigadores Principales" } },
+  { value: "associate", order: 3, label: { en: "Associate Researchers", es: "Investigadores Asociados" } },
+  { value: "postdoc", order: 4, label: { en: "Postdoctoral Researchers", es: "Investigadores Postdoctorales" } },
+  { value: "grad", order: 5, label: { en: "Graduate Students & Research Assistants", es: "Estudiantes de Posgrado y Ayudantes" } },
+  { value: "collaborator", order: 6, label: { en: "Collaborators", es: "Colaboradores" } },
+  { value: "team", order: 7, label: { en: "Research Team", es: "Equipo de Investigación" } }
+];
+export function teamGroupLabel(value: string, lang: "en" | "es"): string {
+  return TEAM_GROUPS.find((g) => g.value === value)?.label[lang] || value;
 }

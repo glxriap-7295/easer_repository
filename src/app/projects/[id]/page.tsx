@@ -34,6 +34,8 @@ export default function ProjectPage() {
   if (!p) return <div className="mx-auto max-w-3xl px-4 py-16 text-stone-500">{t("common.loading")}</div>;
 
   const featuredPdf = p.resources.find((r) => r.category === "report" && r.isPdf && r.downloadUrl);
+  const tools = p.resources.filter((r) => r.category === "model");
+  const publications = p.resources.filter((r) => r.category === "report");
   const groups = FILE_CATEGORIES.map((c) => ({ ...c, items: p.resources.filter((r) => r.category === c.value) })).filter((g) => g.items.length);
 
   return (
@@ -58,6 +60,33 @@ export default function ProjectPage() {
       <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]">
         {/* Main */}
         <div>
+          {/* About this project — context before repository contents */}
+          <Card className="mb-6 p-6">
+            <h2 className="font-serif text-lg font-semibold text-stone-900">About this project</h2>
+            <div className="mt-3 space-y-3 text-sm">
+              <div><p className="font-medium text-stone-500">What this project is</p><p className="text-stone-700">{p.description || "—"}</p></div>
+              {p.purpose && <div><p className="font-medium text-stone-500">Why it exists / the problem it addresses</p><p className="text-stone-700">{p.purpose}</p></div>}
+              <div><p className="font-medium text-stone-500">Computational tools</p>
+                <p className="text-stone-700">{tools.length ? tools.map((t) => t.name).join(", ") : "See the resources below."}</p></div>
+              <div><p className="font-medium text-stone-500">Associated publications</p>
+                {publications.length ? (
+                  <ul className="mt-1 space-y-1">
+                    {publications.map((pub, i) => {
+                      const link = pub.metadata.publicationLink || (pub.metadata.doi ? `https://doi.org/${pub.metadata.doi}` : "");
+                      return (
+                        <li key={i} className="text-stone-700">
+                          {link ? <a href={link} target="_blank" rel="noreferrer" className="text-accent-700 hover:underline">{pub.name}</a> : pub.name}
+                          {pub.metadata.journal ? ` — ${pub.metadata.journal}` : ""}
+                          {pub.metadata.doi ? ` · DOI: ${pub.metadata.doi}` : ""}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : <p className="text-stone-700">—</p>}
+              </div>
+            </div>
+            <p className="mt-4 border-t border-stone-100 pt-3 text-xs text-stone-400">The full repository contents are available below.</p>
+          </Card>
           {/* Featured paper (PDF) */}
           {featuredPdf && (
             <div className="mb-6">
