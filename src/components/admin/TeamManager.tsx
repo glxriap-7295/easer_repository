@@ -2,14 +2,10 @@
 import { useEffect, useState } from "react";
 import { Card, Button, Input, Select, Field, Badge } from "@/components/ui";
 import { apiGet, apiPost, apiPatch } from "@/lib/client";
-import { INSTITUTION_ORDER } from "@/lib/constants";
+import { INSTITUTION_ORDER, TEAM_GROUPS } from "@/lib/constants";
 import type { TeamMember } from "@/lib/types";
 
-const GROUPS = [
-  { value: "director", label: "Director" },
-  { value: "pi", label: "Principal Investigator" },
-  { value: "team", label: "Full Research Team" }
-];
+const GROUPS = TEAM_GROUPS.map((g) => ({ value: g.value, label: g.label.en }));
 
 async function fileToDataUrl(file: File): Promise<string> {
   return new Promise((res, rej) => {

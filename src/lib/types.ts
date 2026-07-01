@@ -169,7 +169,7 @@ export interface RepoTreeNode {
 }
 
 /* ───────────────────────── Institutional site (Team + News) ───────────────────────── */
-export type TeamGroup = "director" | "pi" | "team";
+export type TeamGroup = "director" | "pi" | "associate" | "postdoc" | "grad" | "collaborator" | "team";
 
 export interface TeamMember {
   id: string;

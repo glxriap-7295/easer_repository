@@ -33,7 +33,7 @@ export default function Home() {
     { label: L === "es" ? "Proyectos" : "Projects", value: stats?.projects },
     { label: L === "es" ? "Investigadores" : "Researchers", value: stats?.researchers },
     { label: L === "es" ? "Conjuntos de datos" : "Datasets", value: stats?.datasets },
-    { label: L === "es" ? "Modelos" : "Models", value: stats?.models },
+    { label: L === "es" ? "Herramientas Computacionales" : "Computational Tools", value: stats?.models },
     { label: L === "es" ? "Publicaciones" : "Publications", value: stats?.publications }
   ];
 
@@ -96,7 +96,7 @@ export default function Home() {
 
       {/* IMPACT */}
       <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="text-2xl font-bold text-stone-900">{L === "es" ? "Impacto" : "Impact"}</h2>
+        <h2 className="text-2xl font-bold text-stone-900">{L === "es" ? "Actividad Científica" : "Scientific Activity"}</h2>
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-5">
           {impact.map((m) => (
             <Card key={m.label} className="p-5 text-center">
