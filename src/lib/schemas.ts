@@ -32,7 +32,8 @@ export const uploadedFileSchema = z.object({
   url: z.string().optional(),
   sha: z.string().optional(),
   category: z.enum(["report", "dataset", "model", "gis", "presentation", "documentation", "other"]).optional(),
-  metadata: z.record(z.string()).optional()
+  metadata: z.record(z.string()).optional(),
+  folder: z.string().optional()
 });
 
 export const createContributionSchema = z.object({
@@ -59,6 +60,7 @@ export const institutionSchema = z.object({
 // Lenient schema for saving drafts — only a title is required.
 export const draftProjectSchema = z.object({
   title: z.string().min(1, "A title is required to save a draft"),
+  projectType: z.string().optional(),
   category: z.enum(["model", "dataset", "gis", "report", "documentation", "script", "resource"]).default("model"),
   description: z.string().optional().default(""),
   purpose: z.string().optional().default(""),

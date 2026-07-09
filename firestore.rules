@@ -1,73 +1,92 @@
 rules_version = '2';
-// EASER Research Data Hub — Firestore security rules.
-// Writes that mutate official state go through server-side API routes using the
-// Admin SDK (which bypasses these rules). Client rules below are deliberately
-// conservative: the public can read published docs, authenticated users can
-// create submissions, and only admins can read/modify the review pipeline.
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EASER Platform — PRODUCTION Firestore security rules (RC1).
+//
+// Security model:
+//   • The website reads Firestore directly for PUBLIC, published content only.
+//   • Researchers NEVER write to Firestore from the browser. Every write goes
+//     through an authenticated Next.js API route using the Firebase Admin SDK,
+//     which BYPASSES these rules. Therefore client writes are denied by default.
+//   • Admin/curator actions also run server-side via the Admin SDK.
+//
+// Net effect: these rules only govern DIRECT client reads. All mutations are
+// server-mediated, validated with zod, and authorized with requireRole().
+// ─────────────────────────────────────────────────────────────────────────────
 service cloud.firestore {
   match /databases/{database}/documents {
 
     function isSignedIn() { return request.auth != null; }
-    function isAdmin() {
-      return isSignedIn() && request.auth.token.admin == true;
-    }
-    function isCurator() {
-      return isSignedIn() &&
-        (request.auth.token.admin == true || request.auth.token.role == 'curator');
+    // Custom claims are set server-side (users.ts) via the Admin SDK.
+    function isAdmin()   { return isSignedIn() && request.auth.token.admin == true; }
+    function isCurator() { return isSignedIn() &&
+      (request.auth.token.admin == true || request.auth.token.role == 'curator'); }
+
+    // Published, denormalised registry of approved projects → fully public read.
+    match /registry/{id} {
+      allow read: if true;
+      allow write: if false;            // server-only (Admin SDK)
     }
 
-    // Platform users. The Admin SDK (server) is the only writer — role and
-    // profile changes flow through API routes. A user may read their own doc.
-    match /users/{uid} {
-      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
-      allow write: if false; // server-only via Admin SDK
-    }
-
-    // Contributions: created by anyone (incl. anonymous submitters via API),
-    // readable by curators/admins and by the submitter; only curators+ update.
-    match /contributions/{id} {
-      allow read: if isCurator() ||
-        (isSignedIn() && resource.data.submitter.email == request.auth.token.email);
-      allow create: if true;        // also validated server-side by API + zod
-      allow update, delete: if isCurator();
-    }
-
-    // Projects (Phase 3+). Server (Admin SDK) is the only writer; reads are
-    // limited to the owner and curators/admins. The public never reads drafts.
+    // Projects — private working data. The public site reads projects through
+    // server routes (/api/public/projects) that filter to published status, so
+    // direct client reads are limited to the owner and curators/admins.
     match /projects/{id} {
       allow read: if isCurator() ||
         (isSignedIn() && resource.data.ownerUid == request.auth.uid);
-      allow write: if false; // server-only via Admin SDK
+      allow write: if false;            // server-only (Admin SDK)
     }
 
-    // Public registry of APPROVED contributions (denormalised, read-only).
-    match /registry/{id} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // Audit log — curator/admin read only, server writes via Admin SDK.
-    match /audit/{id} {
-      allow read: if isCurator();
+    // Legacy contributions (pre-RC1). Same conservative policy; server-only writes.
+    match /contributions/{id} {
+      allow read: if isCurator() ||
+        (isSignedIn() && resource.data.submitter.email == request.auth.token.email);
       allow write: if false;
     }
 
-    // Team members — public read; server (Admin SDK) is the only writer.
+    // Team members — public read (Team page is public); server-only writes.
     match /team/{id} {
       allow read: if true;
       allow write: if false;
     }
 
-    // News posts — public read; server (Admin SDK) is the only writer.
+    // News / Novedades — public read; server-only writes.
+    // (The public list route filters to status == 'published'.)
     match /news/{id} {
       allow read: if true;
       allow write: if false;
     }
 
-    // Contributor records (public profiles, Phase 6).
+    // Platform users (profile + role). A user may read ONLY their own document;
+    // admins may read all. All writes are server-only via the Admin SDK.
+    match /users/{uid} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      allow write: if false;
+    }
+
+    // Append-only audit log — admin/curator read only; server-only writes.
+    match /audit/{id} {
+      allow read: if isCurator();
+      allow write: if false;
+    }
+
+    // Temporary upload staging (chunked file bytes). Never client-readable.
+    match /_uploads/{id} {
+      allow read, write: if false;      // server-only (Admin SDK)
+      match /chunks/{chunkId} {
+        allow read, write: if false;
+      }
+    }
+
+    // Contributor profile records (public), server-only writes.
     match /contributors/{id} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if false;
+    }
+
+    // Default deny — any collection not explicitly listed is fully locked down.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

@@ -278,13 +278,67 @@ export function institutionLogo(name?: string): string | undefined {
 /* ───────────── Team role groups (Priority 5) — ordered, dynamic taxonomy ───────────── */
 export const TEAM_GROUPS: { value: string; order: number; label: { en: string; es: string } }[] = [
   { value: "director", order: 1, label: { en: "Director", es: "Director" } },
-  { value: "pi", order: 2, label: { en: "Principal Investigators", es: "Investigadores Principales" } },
-  { value: "associate", order: 3, label: { en: "Associate Researchers", es: "Investigadores Asociados" } },
-  { value: "postdoc", order: 4, label: { en: "Postdoctoral Researchers", es: "Investigadores Postdoctorales" } },
-  { value: "grad", order: 5, label: { en: "Graduate Students & Research Assistants", es: "Estudiantes de Posgrado y Ayudantes" } },
-  { value: "collaborator", order: 6, label: { en: "Collaborators", es: "Colaboradores" } },
-  { value: "team", order: 7, label: { en: "Research Team", es: "Equipo de Investigación" } }
+  { value: "subdirector", order: 2, label: { en: "Subdirector", es: "Subdirector" } },
+  { value: "pi", order: 3, label: { en: "Principal Investigators", es: "Investigadores Principales" } },
+  { value: "researcher", order: 4, label: { en: "Researchers", es: "Investigadores" } },
+  { value: "associate", order: 5, label: { en: "Associate Researchers", es: "Investigadores Asociados" } },
+  { value: "postdoc", order: 6, label: { en: "Postdoctoral Researchers", es: "Investigadores Postdoctorales" } },
+  { value: "grad", order: 7, label: { en: "Graduate Students & Research Assistants", es: "Estudiantes de Posgrado y Ayudantes" } },
+  { value: "collaborator", order: 8, label: { en: "Other Contributors", es: "Otros Colaboradores" } },
+  { value: "team", order: 9, label: { en: "Research Team", es: "Equipo de Investigación" } }
 ];
 export function teamGroupLabel(value: string, lang: "en" | "es"): string {
   return TEAM_GROUPS.find((g) => g.value === value)?.label[lang] || value;
+}
+
+/* ───────────── RC1: project classification + resource kinds ───────────── */
+export const PROJECT_TYPES: { value: string; label: { en: string; es: string } }[] = [
+  { value: "research", label: { en: "Research Project", es: "Proyecto de investigación" } },
+  { value: "computational_tool", label: { en: "Computational Tool", es: "Herramienta computacional" } },
+  { value: "dataset", label: { en: "Dataset", es: "Conjunto de datos" } },
+  { value: "publication", label: { en: "Publication", es: "Publicación" } },
+  { value: "software", label: { en: "Software Package", es: "Paquete de software" } },
+  { value: "educational", label: { en: "Educational Resource", es: "Recurso educativo" } },
+  { value: "field_campaign", label: { en: "Field Campaign", es: "Campaña de terreno" } },
+  { value: "reconnaissance", label: { en: "Reconnaissance", es: "Reconocimiento" } }
+];
+export function projectTypeLabel(value: string | undefined, lang: "en" | "es"): string {
+  return PROJECT_TYPES.find((t) => t.value === value)?.label[lang] || (lang === "es" ? "Proyecto de investigación" : "Research Project");
+}
+
+export const RESOURCE_KINDS: { value: string; label: { en: string; es: string } }[] = [
+  { value: "repository", label: { en: "GitHub Repository", es: "Repositorio GitHub" } },
+  { value: "publication", label: { en: "Publication", es: "Publicación" } },
+  { value: "doi", label: { en: "DOI", es: "DOI" } },
+  { value: "documentation", label: { en: "Documentation", es: "Documentación" } },
+  { value: "presentation", label: { en: "Presentation", es: "Presentación" } },
+  { value: "video", label: { en: "Video", es: "Video" } },
+  { value: "image", label: { en: "Image", es: "Imagen" } },
+  { value: "dataset", label: { en: "Dataset", es: "Conjunto de datos" } },
+  { value: "software", label: { en: "Software", es: "Software" } },
+  { value: "model", label: { en: "Computational Model", es: "Modelo computacional" } },
+  { value: "external", label: { en: "External Resource", es: "Recurso externo" } }
+];
+
+// Suggested repository folders offered in the Repository Builder (researcher may
+// add unlimited custom folders). Only folders with files are created on GitHub.
+export const SUGGESTED_FOLDERS = [
+  "Documentation", "Results", "Computational Models", "Data",
+  "Publications", "Scripts", "Images", "Videos", "Notebooks", "Resources"
+];
+
+// EASER organization on GitHub (social + future one-repo-per-project home).
+export const GITHUB_ORG_URL = process.env.NEXT_PUBLIC_GITHUB_ORG_URL || "https://github.com/glxriap-7295";
+
+// Heuristic category from a filename/folder (used when importing existing repos).
+export function inferFileCategory(name: string, folder?: string): FileCategory {
+  const f = (folder || "").toLowerCase();
+  const n = name.toLowerCase();
+  if (/report|paper|manuscript|publication/.test(f) || /\.(pdf|docx?|tex)$/.test(n)) return "report";
+  if (/data|dataset|datos/.test(f) || /\.(csv|tsv|xlsx?|json|parquet|nc|h5)$/.test(n)) return "dataset";
+  if (/model|simulation|notebook|code|script/.test(f) || /\.(py|ipynb|m|jl|r|cpp|c|f90)$/.test(n)) return "model";
+  if (/gis|spatial|map/.test(f) || /\.(shp|geojson|kml|tif|tiff|gpkg)$/.test(n)) return "gis";
+  if (/present|slide/.test(f) || /\.(pptx?|key)$/.test(n)) return "presentation";
+  if (/doc|guide|manual|readme/.test(f) || /\.(md|rst|txt)$/.test(n)) return "documentation";
+  return "other";
 }
