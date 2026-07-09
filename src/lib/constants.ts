@@ -142,9 +142,9 @@ export const EASER_INFO = {
   instagram: "https://www.instagram.com/proyecto.easer/",
   social: {
     instagram: "https://www.instagram.com/proyecto.easer/",
-    linkedin: "",
-    youtube: "",
-    spotify: ""
+    linkedin: "https://www.linkedin.com/company/proyecto-easer/posts/?feedView=all",
+    youtube: "https://www.youtube.com/@proyecto-easer",
+    spotify: "https://open.spotify.com/show/3S4DZDvknEO44mCrQaQPkj"
   } as Record<string, string>,
   location: "Concepción, Chile",
   name: "EASER — Evolution Assessment of Seismic Risk",
@@ -328,7 +328,7 @@ export const SUGGESTED_FOLDERS = [
 ];
 
 // EASER organization on GitHub (social + future one-repo-per-project home).
-export const GITHUB_ORG_URL = process.env.NEXT_PUBLIC_GITHUB_ORG_URL || "https://github.com/glxriap-7295";
+export const GITHUB_ORG_URL = process.env.NEXT_PUBLIC_GITHUB_ORG_URL || "https://github.com/anillo-easer";
 
 // Heuristic category from a filename/folder (used when importing existing repos).
 export function inferFileCategory(name: string, folder?: string): FileCategory {

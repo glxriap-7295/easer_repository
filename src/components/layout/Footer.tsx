@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useT } from "@/components/i18n/LanguageProvider";
+import { SocialLinks } from "@/components/SocialLinks";
 
 const INSTITUTIONS: { name: string; url: string }[] = [
   { name: "EASER", url: "https://www.proyectoeaser.cl/" },
@@ -23,6 +24,7 @@ export function Footer() {
             </div>
             <p className="mt-2">GitHub-centric research repository management for the EASER initiative.</p>
             <Link href="/researchers" className="mt-2 inline-block text-accent-600 hover:underline">{t("researchers.title")}</Link>
+            <SocialLinks className="mt-3" />
           </div>
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Project & partners</p>

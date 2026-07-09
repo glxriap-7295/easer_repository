@@ -1,18 +1,17 @@
 import type { Config } from "tailwindcss";
 
-// EASER geoscience identity (aligned with the official logo & proyectoeaser.cl).
-// brand  = deep petrol/teal — ocean/earth depth, seismic science (primary).
-// accent = warm gold/amber — taken from the EASER logo (highlights, links).
-// neutrals use Tailwind's warm "stone" scale.
+// EASER institutional identity (mockup source of truth).
+// brand  = forest / olive green (hero, footer, primary actions).
+// accent = warm gold/amber (highlights, links). Neutrals use warm "stone".
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
         brand: {
-          50: "#eef4f6", 100: "#d6e6ea", 200: "#aecfd6", 300: "#7db0bb",
-          400: "#4f8e9d", 500: "#2f6f80", 600: "#245a69", 700: "#1d4a57",
-          800: "#173b46", 900: "#122e37"
+          50: "#eef4ef", 100: "#d7e6dc", 200: "#aecdb8", 300: "#7fb08f",
+          400: "#4f8d64", 500: "#2f6f45", 600: "#255736", 700: "#1e472c",
+          800: "#173722", 900: "#122a1b"
         },
         accent: {
           50: "#fdf6e9", 100: "#f8e7c2", 200: "#f0cf86", 300: "#e6b455",
@@ -26,7 +25,7 @@ const config: Config = {
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"]
       },
       boxShadow: {
-        card: "0 1px 2px rgba(18,46,55,0.05), 0 4px 16px rgba(18,46,55,0.08)"
+        card: "0 1px 2px rgba(18,42,27,0.04), 0 6px 20px rgba(18,42,27,0.06)"
       }
     }
   },

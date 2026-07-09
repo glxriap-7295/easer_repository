@@ -217,6 +217,10 @@ export interface ImportedRepo {
   defaultBranch: string;
   readme: string;
   tree: RepoTreeNode[];
+  sizeKb: number;
+  license: string | null;
+  language: string | null;
+  pushedAt: string | null;
 }
 
 /** Read an existing repository (structure + README) WITHOUT modifying it. */
@@ -234,5 +238,10 @@ export async function readRepo(owner: string, name: string): Promise<ImportedRep
     const r = await gh.repos.getReadme({ owner, repo: name });
     readme = Buffer.from(r.data.content, "base64").toString("utf8");
   } catch { /* no README */ }
-  return { owner, name: repo.data.name, url: repo.data.html_url, description: repo.data.description || "", defaultBranch: branch, readme, tree };
+  return {
+    owner, name: repo.data.name, url: repo.data.html_url,
+    description: repo.data.description || "", defaultBranch: branch, readme, tree,
+    sizeKb: repo.data.size || 0, license: repo.data.license?.spdx_id || null,
+    language: repo.data.language || null, pushedAt: repo.data.pushed_at || null
+  };
 }

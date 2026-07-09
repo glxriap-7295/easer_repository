@@ -189,7 +189,7 @@ ${p.requirements?.trim() || NS}
 ## Related Research
 ${publications.length ? list(publications) : (relatedLinks.length ? list(relatedLinks) : NS)}
 
-${gis.length ? `_GIS layers included: ${gis.join(", ")}._\n` : ""}${p.keywords?.length ? `_Keywords: ${p.keywords.join(", ")}._\n\n` : ""}> This Scientific Overview was generated from the project's repository contents (README, metadata, folder organisation, files, description and publications) using AI. It reorganises existing information and does not add facts beyond those provided.
+${gis.length ? `_GIS layers included: ${gis.join(", ")}._\n` : ""}${p.keywords?.length ? `_Keywords: ${p.keywords.join(", ")}._\n\n` : ""}> Automatically generated from repository contents (README, metadata, folder organisation, files, description and publications). Reviewed by the project authors when applicable. Only information present in the repository is used; unavailable sections are marked "Not specified in the repository."
 `;
 }
 
@@ -234,7 +234,7 @@ export class OllamaDocumentationGenerator implements DocumentationGenerator {
         `You are writing project documentation for the EASER seismic-risk research repository. Using ONLY the facts below, write a human-readable README.md in Markdown that reads like documentation (prose, not a form). Cover: what the project is, why it exists, repository contents (the folders), where to start, how datasets/models/reports/GIS relate, file descriptions, requirements/dependencies, contributors, and citation. Do not invent facts. Output only Markdown.\n\nFACTS:\n${facts}`
       );
       const summary = await this.ask(
-        `Using ONLY these facts, write a Scientific Overview in Markdown for researchers from adjacent disciplines, with these level-2 sections in order: Purpose, Scientific Context, Methods, Inputs, Outputs, Computational Tools, Applications, Limitations, Related Research. Do NOT invent information — if a section has no basis in the facts, write "Not specified." End with a one-line note that it was generated from repository contents using AI. Output only Markdown.\n\nFACTS:\n${facts}`
+        `Using ONLY these facts, write a Scientific Overview in Markdown for researchers from adjacent disciplines, with these level-2 sections in order: Purpose, Scientific Context, Methods, Inputs, Outputs, Computational Tools, Applications, Limitations, Related Research. Do NOT invent information — if a section has no basis in the facts, write "Not specified." End with a one-line note: "Automatically generated from repository contents. Reviewed by the project authors when applicable." Output only Markdown.\n\nFACTS:\n${facts}`
       );
       return { readme, summary, generatedBy: `ollama:${this.model}` };
     } catch (err) {

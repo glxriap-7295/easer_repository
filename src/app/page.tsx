@@ -31,7 +31,7 @@ export default function Home() {
   const latestNews = news.slice(0, 3);
   const impact = [
     { label: L === "es" ? "Proyectos" : "Projects", value: stats?.projects },
-    { label: L === "es" ? "Investigadores" : "Researchers", value: stats?.researchers },
+    { label: L === "es" ? "Contribuidores" : "Contributors", value: stats?.researchers },
     { label: L === "es" ? "Conjuntos de datos" : "Datasets", value: stats?.datasets },
     { label: L === "es" ? "Herramientas Computacionales" : "Computational Tools", value: stats?.models },
     { label: L === "es" ? "Publicaciones" : "Publications", value: stats?.publications }
