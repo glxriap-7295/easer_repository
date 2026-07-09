@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, Badge } from "@/components/ui";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { apiGet } from "@/lib/client";
+import { SocialLinks } from "@/components/SocialLinks";
 import type { NewsPost } from "@/lib/types";
 
 export default function NewsPage() {
@@ -18,8 +19,9 @@ export default function NewsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="text-3xl font-bold text-stone-900">{L === "es" ? "Noticias" : "News"}</h1>
+      <h1 className="text-3xl font-bold text-stone-900">{L === "es" ? "Novedades" : "News"}</h1>
       <p className="mt-2 text-stone-600">{L === "es" ? "Novedades, artículos y actividades del proyecto EASER." : "Updates, articles and activities from the EASER project."}</p>
+      <div className="mt-4"><p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-500">{L === "es" ? "Síguenos" : "Follow us"}</p><SocialLinks /></div>
 
       {loading ? <p className="mt-8 text-stone-500">…</p>
         : !news.length ? <Card className="mt-8 p-8 text-center text-sm text-stone-600">{L === "es" ? "Aún no hay noticias publicadas." : "No news published yet."}</Card>
@@ -60,6 +62,10 @@ export default function NewsPage() {
             </div>
           </>
         )}
+      <section className="mt-12">
+        <h2 className="text-xl font-bold text-stone-900">{L === "es" ? "Próximos eventos" : "Upcoming events"}</h2>
+        <Card className="mt-4 p-6 text-sm text-stone-600">{L === "es" ? "No hay eventos programados por el momento. Vuelve pronto para conocer seminarios, congresos y actividades de difusión." : "No events scheduled at the moment. Check back soon for seminars, conferences and outreach activities."}</Card>
+      </section>
     </div>
   );
 }

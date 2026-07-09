@@ -4,13 +4,7 @@ import { Card } from "@/components/ui";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { INSTITUTION_ORDER, EASER_INFO } from "@/lib/constants";
 import { PartnerLogos } from "@/components/InstitutionLogo";
-
-const SOCIALS: { key: string; label: string }[] = [
-  { key: "instagram", label: "Instagram" },
-  { key: "linkedin", label: "LinkedIn" },
-  { key: "youtube", label: "YouTube" },
-  { key: "spotify", label: "Spotify" }
-];
+import { SocialLinks } from "@/components/SocialLinks";
 
 export default function ContactPage() {
   const { lang } = useT();
@@ -31,14 +25,7 @@ export default function ContactPage() {
           <p className="mt-1 text-sm text-stone-700">{L === "es" ? "Sitio oficial" : "Official site"}: <a className="text-accent-700 hover:underline" href={EASER_INFO.official} target="_blank" rel="noreferrer">proyectoeaser.cl</a></p>
 
           <h3 className="mt-4 text-xs font-semibold uppercase tracking-wide text-stone-500">{L === "es" ? "Redes sociales" : "Social media"}</h3>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {SOCIALS.map((s) => {
-              const url = EASER_INFO.social[s.key];
-              return url
-                ? <a key={s.key} href={url} target="_blank" rel="noreferrer" className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-stone-100">{s.label}</a>
-                : <span key={s.key} title={L === "es" ? "Próximamente" : "Coming soon"} aria-disabled className="cursor-not-allowed rounded-lg border border-stone-200 px-3 py-1.5 text-sm font-medium text-stone-400">{s.label}</span>;
-            })}
-          </div>
+          <SocialLinks className="mt-2" />
         </Card>
 
         <Card className="p-6">

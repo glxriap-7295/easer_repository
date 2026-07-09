@@ -94,7 +94,7 @@ export const es: Dict = {
     appName: "EASER Research Data Hub",
     signIn: "Iniciar sesión", register: "Registrarse", logout: "Cerrar sesión",
     contribute: "Contribuir", browse: "Explorar", search: "Buscar",
-    documentation: "Documentación", home: "Inicio", ourWork: "Nuestro trabajo", team: "Equipo", news: "Noticias", contact: "Contacto", dashboard: "Mi panel", profile: "Perfil",
+    documentation: "Documentación", home: "Inicio", ourWork: "Nuestro trabajo", team: "Equipo", news: "Novedades", contact: "Contacto", dashboard: "Mi panel", profile: "Perfil",
     reviewQueue: "Cola de revisión", userManagement: "Gestión de usuarios",
     loading: "Cargando…", back: "Volver", refresh: "Actualizar", save: "Guardar",
     email: "Correo", password: "Contraseña", optional: "Opcional",

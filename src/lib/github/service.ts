@@ -138,3 +138,101 @@ export async function publishFiles(
   });
   return { strategy, url: pr.data.html_url, branch, prNumber: pr.data.number };
 }
+
+/* ───────────────────────── RC1: one repository per project + import ─────────────────────────
+   The monorepo publishFiles() above is preserved for backwards compatibility.
+   These functions add an independent-repository-per-project strategy and the
+   ability to read (import) an existing repository WITHOUT modifying it. */
+
+const ORG = process.env.GITHUB_ORG || ""; // if set, repos are created in this org
+const REPO_PREFIX = process.env.GITHUB_REPO_PREFIX || "easer-";
+
+export const repoOwnerDefault = ORG || OWNER;
+
+export interface ProjectRepo {
+  owner: string;
+  name: string;
+  url: string;
+  defaultBranch: string;
+  created: boolean;
+}
+
+/** Ensure a dedicated repository exists for a project (create if missing). */
+export async function ensureProjectRepo(slug: string, description: string): Promise<ProjectRepo> {
+  const gh = client();
+  const name = `${REPO_PREFIX}${slug}`.slice(0, 90);
+  const owner = ORG || OWNER;
+  try {
+    const { data } = await gh.repos.get({ owner, repo: name });
+    return { owner, name: data.name, url: data.html_url, defaultBranch: data.default_branch, created: false };
+  } catch (e: any) {
+    if (e.status !== 404) throw e;
+  }
+  const created = ORG
+    ? await gh.repos.createInOrg({ org: ORG, name, description: description.slice(0, 300), private: false, auto_init: true })
+    : await gh.repos.createForAuthenticatedUser({ name, description: description.slice(0, 300), private: false, auto_init: true });
+  return {
+    owner: created.data.owner?.login || owner,
+    name: created.data.name,
+    url: created.data.html_url,
+    defaultBranch: created.data.default_branch || "main",
+    created: true
+  };
+}
+
+/** Commit a full set of files to a specific repository's default branch. */
+export async function commitToRepo(
+  owner: string, repo: string, branch: string, files: CommitFile[], message: string
+): Promise<string> {
+  const gh = client();
+  const ref = await gh.git.getRef({ owner, repo, ref: `heads/${branch}` });
+  const baseSha = ref.data.object.sha;
+  const baseCommit = await gh.git.getCommit({ owner, repo, commit_sha: baseSha });
+  const blobs = await Promise.all(files.map(async (f) => {
+    const blob = await gh.git.createBlob({
+      owner, repo,
+      content: f.encoding === "base64" ? f.content : Buffer.from(f.content, "utf8").toString("base64"),
+      encoding: "base64"
+    });
+    return { path: f.path, mode: "100644" as const, type: "blob" as const, sha: blob.data.sha };
+  }));
+  const tree = await gh.git.createTree({ owner, repo, base_tree: baseCommit.data.tree.sha, tree: blobs });
+  const commit = await gh.git.createCommit({ owner, repo, message, tree: tree.data.sha, parents: [baseSha] });
+  await gh.git.updateRef({ owner, repo, ref: `heads/${branch}`, sha: commit.data.sha });
+  return commit.data.html_url;
+}
+
+/** Parse an owner/name pair from a GitHub URL or "owner/repo" string. */
+export function parseRepoUrl(input: string): { owner: string; name: string } | null {
+  const s = input.trim().replace(/\.git$/, "");
+  const m = s.match(/github\.com[/:]([^/]+)\/([^/#?]+)/i) || s.match(/^([^/\s]+)\/([^/\s]+)$/);
+  return m ? { owner: m[1], name: m[2] } : null;
+}
+
+export interface ImportedRepo {
+  owner: string;
+  name: string;
+  url: string;
+  description: string;
+  defaultBranch: string;
+  readme: string;
+  tree: RepoTreeNode[];
+}
+
+/** Read an existing repository (structure + README) WITHOUT modifying it. */
+export async function readRepo(owner: string, name: string): Promise<ImportedRepo> {
+  const gh = client();
+  const repo = await gh.repos.get({ owner, repo: name });
+  const branch = repo.data.default_branch;
+  const head = await gh.repos.getBranch({ owner, repo: name, branch });
+  const treeRes = await gh.git.getTree({ owner, repo: name, tree_sha: head.data.commit.commit.tree.sha, recursive: "true" });
+  const tree: RepoTreeNode[] = treeRes.data.tree.filter((t) => t.path).map((t) => ({
+    path: t.path!, type: t.type === "tree" ? "tree" : "blob", size: t.size, sha: t.sha!
+  }));
+  let readme = "";
+  try {
+    const r = await gh.repos.getReadme({ owner, repo: name });
+    readme = Buffer.from(r.data.content, "base64").toString("utf8");
+  } catch { /* no README */ }
+  return { owner, name: repo.data.name, url: repo.data.html_url, description: repo.data.description || "", defaultBranch: branch, readme, tree };
+}

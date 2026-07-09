@@ -146,37 +146,51 @@ ${p.license ? `## License\n${p.license}\n\n` : ""}---
 
 export function buildSummary(p: Project): string {
   const grouped = byCategory(p.files);
-  const counts = FILE_CATEGORIES.filter((c) => grouped.get(c.value)?.length)
-    .map((c) => `${grouped.get(c.value)!.length} ${c.label.toLowerCase()}(s)`).join(", ") || "no files yet";
   const datasets = (grouped.get("dataset") || []).map((f) => f.name);
   const models = (grouped.get("model") || []).map((f) => f.name);
   const reports = (grouped.get("report") || []).map((f) => f.name);
+  const gis = (grouped.get("gis") || []).map((f) => f.name);
+  const NS = "_Not specified._";
+  const list = (arr: string[]) => (arr.length ? arr.map((x) => `- ${x}`).join("\n") : NS);
+  const inputs = [p.inputFiles, ...datasets].filter(Boolean);
+  const outputs = [p.outputFiles, ...reports].filter(Boolean);
+  const tools = [...models, p.dependencies, p.execution].filter(Boolean);
+  const relatedLinks = (p.relatedLinks || []);
+  const publications = (p.publications || []).map((pub) => pub.title + (pub.doi ? ` (DOI: ${pub.doi})` : ""));
 
-  const methodology = [p.purpose].filter(Boolean).join(" ") ||
-    "See the reports and resources in this repository for methodological detail.";
-  const start = reports.length ? "the report(s) in **Reports/**"
-    : datasets.length ? "the data in **Datasets/**"
-    : models.length ? "the model(s) in **Models/**"
-    : "the resource folders";
+  // Scientific Overview — reorganises ONLY the provided facts. Any section with
+  // no basis in the project data is marked "Not specified." (never invented).
+  return `# Scientific Overview — ${p.title}
 
-  return `# AI Summary — ${p.title}
+## Purpose
+${p.purpose?.trim() || p.description?.trim() || NS}
 
-## Objective
-${p.description?.trim() || "Research project archived in the EASER repository."}
+## Scientific Context
+${p.description?.trim() || NS}
 
-## Methodology
-${methodology}
+## Methods
+${p.execution?.trim() || p.installation?.trim() || NS}
 
-## Available Resources
-This project includes ${counts}.
+## Inputs
+${list(inputs as string[])}
 
-## Key Outputs
-${reports.length ? reports.map((r) => `- ${r}`).join("\n") : "See the resources above for the project's outputs."}
+## Outputs
+${list(outputs as string[])}
 
-## Recommended Starting Point
-A researcher new to this project should begin with ${start}, then consult the full **README.md**.
+## Computational Tools
+${list(tools as string[])}
 
-${p.keywords?.length ? `_Keywords: ${p.keywords.join(", ")}._\n` : ""}`;
+## Applications
+${p.notes?.trim() || NS}
+
+## Limitations
+${p.requirements?.trim() || NS}
+
+## Related Research
+${publications.length ? list(publications) : (relatedLinks.length ? list(relatedLinks) : NS)}
+
+${gis.length ? `_GIS layers included: ${gis.join(", ")}._\n` : ""}${p.keywords?.length ? `_Keywords: ${p.keywords.join(", ")}._\n\n` : ""}> This Scientific Overview was generated from the project's repository contents (README, metadata, folder organisation, files, description and publications) using AI. It reorganises existing information and does not add facts beyond those provided.
+`;
 }
 
 // ── Ollama generator (local, optional) ───────────────────────────────────────
@@ -220,7 +234,7 @@ export class OllamaDocumentationGenerator implements DocumentationGenerator {
         `You are writing project documentation for the EASER seismic-risk research repository. Using ONLY the facts below, write a human-readable README.md in Markdown that reads like documentation (prose, not a form). Cover: what the project is, why it exists, repository contents (the folders), where to start, how datasets/models/reports/GIS relate, file descriptions, requirements/dependencies, contributors, and citation. Do not invent facts. Output only Markdown.\n\nFACTS:\n${facts}`
       );
       const summary = await this.ask(
-        `Using ONLY these facts, write a concise AI_SUMMARY.md (Markdown) a researcher can read in under a minute, with sections: Objective, Methodology, Available Resources, Key Outputs, Recommended Starting Point. Be faithful; do not invent. Output only Markdown.\n\nFACTS:\n${facts}`
+        `Using ONLY these facts, write a Scientific Overview in Markdown for researchers from adjacent disciplines, with these level-2 sections in order: Purpose, Scientific Context, Methods, Inputs, Outputs, Computational Tools, Applications, Limitations, Related Research. Do NOT invent information — if a section has no basis in the facts, write "Not specified." End with a one-line note that it was generated from repository contents using AI. Output only Markdown.\n\nFACTS:\n${facts}`
       );
       return { readme, summary, generatedBy: `ollama:${this.model}` };
     } catch (err) {

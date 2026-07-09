@@ -37,6 +37,7 @@ export interface UploadedFile {
   sha?: string;
   category?: FileCategory;            // file-level category (project-centric)
   metadata?: Record<string, string>; // optional per-file technical metadata
+  folder?: string;                    // explicit repo folder (Repository Builder); overrides category folder
 }
 
 export interface ProjectVersion {
@@ -123,6 +124,12 @@ export interface Project {
 
   files: UploadedFile[];
 
+  // RC1: classification, flexible resources, publications, repo target (all optional)
+  projectType?: ProjectType;
+  resources?: ProjectResource[];
+  publications?: Publication[];
+  repo?: RepoTarget;
+
   // Lifecycle artifacts
   slug?: string;
   readme?: string;     // generated human-readable README
@@ -169,7 +176,7 @@ export interface RepoTreeNode {
 }
 
 /* ───────────────────────── Institutional site (Team + News) ───────────────────────── */
-export type TeamGroup = "director" | "pi" | "associate" | "postdoc" | "grad" | "collaborator" | "team";
+export type TeamGroup = "director" | "subdirector" | "pi" | "researcher" | "associate" | "postdoc" | "grad" | "collaborator" | "team";
 
 export interface TeamMember {
   id: string;
@@ -202,4 +209,54 @@ export interface NewsPost {
   publishedAt?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+/* ───────────────────────── RC1: project classification, resources, publications, repo target ─────────────────────────
+   All additive & optional — existing Project documents remain valid. */
+
+export type ProjectType =
+  | "research" | "computational_tool" | "dataset" | "publication"
+  | "software" | "educational" | "field_campaign" | "reconnaissance";
+
+export type ResourceKind =
+  | "repository" | "publication" | "doi" | "documentation" | "presentation"
+  | "video" | "image" | "dataset" | "software" | "model" | "external";
+
+// A flexible resource attached to a project (extensible without redesign).
+export interface ProjectResource {
+  kind: ResourceKind;
+  label: string;
+  url?: string;              // external link (GitHub, DOI, video, storage provider…)
+  description?: string;
+  fileName?: string;         // when backed by an uploaded/committed file
+  provider?: string;         // future: "github" | "designsafe" | "s3" | …
+}
+
+export interface Publication {
+  title: string;
+  authors?: string;
+  journal?: string;
+  publisher?: string;
+  doi?: string;
+  url?: string;              // official publication URL
+  abstract?: string;
+  access?: "open" | "restricted";
+}
+
+// Where a project's contents live on GitHub. `folder` = legacy single-repo
+// (Published Projects/<name>/); `repo` = one independent repository per project.
+export interface RepoTarget {
+  strategy: "folder" | "repo";
+  owner?: string;
+  name?: string;             // repository name (repo strategy)
+  url?: string;              // html url
+  defaultBranch?: string;
+  importedFrom?: string;     // source URL when the repo was imported
+}
+
+// Researcher-defined folder tree built in the Repository Builder (client-side)
+// and materialised on GitHub only at publish time. Empty folders are dropped.
+export interface RepoFolderNode {
+  name: string;
+  files: UploadedFile[];
 }

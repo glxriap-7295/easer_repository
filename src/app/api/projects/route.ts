@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     status: asDraft ? "draft" : "submitted",
     ownerUid: user.uid,
     title: d.title,
+    projectType: d.projectType || "research",
     category: d.category,
     description: d.description || "",
     purpose: d.purpose || "",
