@@ -31,8 +31,9 @@ export default function TeamPage() {
   useEffect(() => { apiGet<TeamMember[]>("/api/team").then(setTeam).catch(() => setTeam([])).finally(() => setLoading(false)); }, []);
 
   const director = team.find((m) => m.group === "director");
-  // Non-director groups, in canonical order, only if they have members.
-  const groups = TEAM_GROUPS.filter((g) => g.value !== "director")
+  const subdirector = team.find((m) => m.group === "subdirector");
+  // Remaining groups (leadership handled separately), in canonical order.
+  const groups = TEAM_GROUPS.filter((g) => g.value !== "director" && g.value !== "subdirector")
     .map((g) => ({ ...g, members: team.filter((m) => m.group === g.value) }))
     .filter((g) => g.members.length);
 
@@ -43,16 +44,24 @@ export default function TeamPage() {
 
       {loading ? <p className="mt-8 text-stone-500">…</p> : (
         <>
-          {/* Director — emphasized */}
-          {director && (
-            <section className="mt-10 flex flex-col items-center gap-4 rounded-2xl bg-brand-50 p-8 text-center">
-              <Avatar m={director} size={140} />
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-accent-700">{L === "es" ? "Director" : "Director"}</p>
-                <h2 className="mt-1 font-serif text-2xl font-bold text-stone-900">{director.name}</h2>
-                <p className="text-stone-600">{director.role}{director.institution ? ` · ${director.institution}` : ""}</p>
-                {director.bio && <p className="mx-auto mt-2 max-w-xl text-sm text-stone-600">{director.bio}</p>}
-                <LinkedIn url={director.linkedin} />
+          {/* Leadership */}
+          {(director || subdirector) && (
+            <section className="mt-10">
+              <h2 className="text-xl font-bold text-stone-900">{L === "es" ? "Dirección" : "Leadership"}</h2>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                {[["director", director], ["subdirector", subdirector]].map(([role, m]) =>
+                  m ? (
+                    <div key={role as string} className="flex items-center gap-5 rounded-2xl bg-brand-50 p-6">
+                      <Avatar m={m as any} size={104} />
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-accent-700">{role === "director" ? (L === "es" ? "Director" : "Director") : (L === "es" ? "Subdirector" : "Subdirector")}</p>
+                        <h3 className="mt-1 font-serif text-xl font-bold text-stone-900">{(m as any).name}</h3>
+                        <p className="text-sm text-stone-600">{(m as any).role}{(m as any).institution ? ` · ${(m as any).institution}` : ""}</p>
+                        <LinkedIn url={(m as any).linkedin} />
+                      </div>
+                    </div>
+                  ) : null
+                )}
               </div>
             </section>
           )}

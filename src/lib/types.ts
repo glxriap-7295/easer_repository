@@ -216,7 +216,7 @@ export interface NewsPost {
 
 export type ProjectType =
   | "research" | "computational_tool" | "dataset" | "publication"
-  | "software" | "educational" | "field_campaign" | "reconnaissance";
+  | "software" | "educational" | "field_campaign" | "reconnaissance" | "other";
 
 export type ResourceKind =
   | "repository" | "publication" | "doi" | "documentation" | "presentation"

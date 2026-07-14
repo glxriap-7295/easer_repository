@@ -48,6 +48,15 @@ export default function ProjectPage() {
   const tools = p.resources.filter((r) => r.category === "model");
   const groups = FILE_CATEGORIES.map((c) => ({ ...c, items: p.resources.filter((r) => r.category === c.value) })).filter((g) => g.items.length);
   const media = p.resources.filter((r) => /\.(png|jpe?g|gif|webp|svg|mp4|mov|webm)$/i.test(r.name) || r.category === "presentation");
+  const summaryCounts: { label: string; n: number }[] = [
+    { label: L === "es" ? "Modelos computacionales" : "Computational models", n: p.resources.filter((r) => r.category === "model" && !/\.ipynb$/i.test(r.name)).length },
+    { label: L === "es" ? "Notebooks" : "Notebooks", n: p.resources.filter((r) => /\.ipynb$/i.test(r.name)).length },
+    { label: L === "es" ? "Scripts" : "Scripts", n: p.resources.filter((r) => /\.(py|m|jl|r|sh|js|cpp|c|f90)$/i.test(r.name)).length },
+    { label: L === "es" ? "Conjuntos de datos" : "Datasets", n: p.resources.filter((r) => r.category === "dataset").length },
+    { label: L === "es" ? "Figuras" : "Figures", n: p.resources.filter((r) => /\.(png|jpe?g|gif|webp|svg|tif|tiff)$/i.test(r.name)).length },
+    { label: L === "es" ? "Capas GIS" : "GIS layers", n: p.resources.filter((r) => r.category === "gis").length },
+    { label: L === "es" ? "Publicaciones" : "Publications", n: p.publications.length }
+  ].filter((c) => c.n > 0);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -82,6 +91,23 @@ export default function ProjectPage() {
           )}
           <Card className="p-6"><Markdown>{p.summary}</Markdown></Card>
         </Section>
+
+        {/* Repository Summary */}
+        {summaryCounts.length > 0 && (
+          <Section id="repo-summary" lang={L} es="Resumen del repositorio" en="Repository Summary">
+            <Card className="p-5">
+              <p className="text-sm text-stone-600">{L === "es" ? "El repositorio incluye:" : "The repository includes:"}</p>
+              <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {summaryCounts.map((c) => (
+                  <div key={c.label} className="rounded-lg border border-stone-100 bg-stone-50 p-3 text-center">
+                    <p className="font-serif text-2xl font-bold text-brand-700">{c.n}</p>
+                    <p className="text-xs text-stone-600">{c.label}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </Section>
+        )}
 
         {/* 2 · Project Description */}
         <Section id="description" lang={L} es="Descripción del proyecto" en="Project Description">
