@@ -45,7 +45,13 @@ export function NewsManager() {
     <div>
       <div className="flex items-center justify-between">
         <p className="text-sm text-stone-500">{posts.length} post(s)</p>
-        <div className="flex gap-2"><Button variant="secondary" disabled={!!busy} onClick={sync}>Sync official news</Button><Button onClick={add} disabled={!!busy}>+ New post</Button></div>
+        <div className="flex flex-wrap items-center gap-2">
+          {["LinkedIn", "Spotify", "YouTube", "Instagram", "GitHub"].map((c) => (
+            <span key={c} title="Connector — automatic sync coming soon" className="cursor-not-allowed rounded-lg border border-stone-200 px-2.5 py-1.5 text-xs font-medium text-stone-400">{c}</span>
+          ))}
+          <Button variant="secondary" disabled={!!busy} onClick={sync}>Import official news</Button>
+          <Button onClick={add} disabled={!!busy}>+ New post</Button>
+        </div>
       </div>
       {err && <Card className="mt-3 border-red-200 bg-red-50 p-3 text-sm text-red-700">{err}</Card>}
       {loading ? <p className="mt-4 text-stone-500">Loading…</p> : (

@@ -1,48 +1,70 @@
 "use client";
 import Link from "next/link";
 import { useT } from "@/components/i18n/LanguageProvider";
-import { SocialLinks } from "@/components/SocialLinks";
+import { EASER_INFO, GITHUB_ORG_URL, INSTITUTION_ORDER } from "@/lib/constants";
 
-const INSTITUTIONS: { name: string; url: string }[] = [
-  { name: "EASER", url: "https://www.proyectoeaser.cl/" },
-  { name: "Universidad de Chile", url: "https://www.uchile.cl/" },
-  { name: "SENAPRED", url: "https://www.senapred.cl/" },
-  { name: "ANID", url: "https://www.anid.cl/" }
+const SOCIAL: { key: string; label: string; url: string }[] = [
+  { key: "github", label: "GitHub", url: GITHUB_ORG_URL },
+  { key: "linkedin", label: "LinkedIn", url: EASER_INFO.social.linkedin },
+  { key: "spotify", label: "Spotify", url: EASER_INFO.social.spotify },
+  { key: "youtube", label: "YouTube", url: EASER_INFO.social.youtube },
+  { key: "instagram", label: "Instagram", url: EASER_INFO.social.instagram }
 ];
 
 export function Footer() {
-  const { t } = useT();
+  const { t, lang } = useT();
+  const L = lang === "es" ? "es" : "en";
   return (
-    <footer className="border-t border-stone-200 bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-10 text-sm text-stone-500">
-        <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-          <div className="max-w-sm">
+    <footer className="mt-16 bg-brand-800 text-brand-50">
+      <div className="mx-auto max-w-6xl px-4 py-12">
+        <div className="grid gap-10 md:grid-cols-3">
+          {/* Brand + socials */}
+          <div>
             <div className="flex items-center gap-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/easer-logo.svg" alt="EASER" width={32} height={32} className="h-8 w-8" />
-              <p className="font-serif text-base font-semibold text-stone-800">{t("common.appName")}</p>
+              <img src="/easer-logo.svg" alt="EASER" width={36} height={36} className="h-9 w-9 rounded bg-white/90 p-0.5" />
+              <span className="font-serif text-lg font-semibold text-white">EASER<span className="font-sans font-normal text-brand-200"> Data Hub</span></span>
             </div>
-            <p className="mt-2">GitHub-centric research repository management for the EASER initiative.</p>
-            <Link href="/researchers" className="mt-2 inline-block text-accent-600 hover:underline">{t("researchers.title")}</Link>
-            <SocialLinks className="mt-3" />
-          </div>
-          <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-400">Project & partners</p>
-            <ul className="space-y-1">
-              {INSTITUTIONS.map((i) => (
-                <li key={i.name}>
-                  <a href={i.url} target="_blank" rel="noreferrer" className="hover:text-brand-700 hover:underline">{i.name}</a>
-                </li>
+            <p className="mt-3 max-w-xs text-sm text-brand-100">
+              {L === "es"
+                ? "Plataforma de investigación y difusión científica del Proyecto Anillo EASER."
+                : "Research management and scientific dissemination platform for the EASER initiative."}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {SOCIAL.map((s) => (
+                <a key={s.key} href={s.url} target="_blank" rel="noreferrer"
+                  className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-medium text-brand-50 transition hover:bg-white/10">
+                  {s.label}
+                </a>
               ))}
+            </div>
+          </div>
+
+          {/* Explore */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand-200">{L === "es" ? "Explorar" : "Explore"}</p>
+            <ul className="mt-3 space-y-2 text-sm">
+              <li><Link href="/our-work" className="text-brand-100 hover:text-white hover:underline">{t("common.ourWork")}</Link></li>
+              <li><Link href="/docs" className="text-brand-100 hover:text-white hover:underline">{t("common.documentation")}</Link></li>
+              <li><Link href="/team" className="text-brand-100 hover:text-white hover:underline">{t("common.team")}</Link></li>
+              <li><Link href="/news" className="text-brand-100 hover:text-white hover:underline">{t("common.news")}</Link></li>
+              <li><Link href="/contact" className="text-brand-100 hover:text-white hover:underline">{t("common.contact")}</Link></li>
+            </ul>
+          </div>
+
+          {/* Partners */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand-200">{L === "es" ? "Instituciones participantes" : "Participating institutions"}</p>
+            <ul className="mt-3 space-y-2 text-sm text-brand-100">
+              {INSTITUTION_ORDER.map((i) => <li key={i.canonical}>{i.canonical}</li>)}
             </ul>
           </div>
         </div>
-        <p className="mt-8 text-xs text-stone-400">
-          Source of truth:{" "}
-          <a className="underline" href="https://github.com/glxriap-7295/easer_repository" target="_blank" rel="noreferrer">github.com/glxriap-7295/easer_repository</a>
-          {" · "}
-          <a className="underline" href="https://www.proyectoeaser.cl/" target="_blank" rel="noreferrer">proyectoeaser.cl</a>
-        </p>
+
+        <div className="mt-10 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-brand-200 sm:flex-row sm:items-center sm:justify-between">
+          <span>© {new Date().getFullYear()} Proyecto EASER · ANID</span>
+          <a href={EASER_INFO.official} target="_blank" rel="noreferrer" className="hover:text-white hover:underline">proyectoeaser.cl</a>
+        </div>
       </div>
     </footer>
   );

@@ -33,7 +33,6 @@ function ContributeInner() {
 
       <div className="mt-4 flex flex-wrap gap-3 text-sm">
         <Link href="/contribute/import" className="rounded-lg border border-stone-300 px-3 py-1.5 font-medium text-stone-700 hover:bg-stone-100">{L === "es" ? "Importar repositorio existente" : "Import existing repository"}</Link>
-        <Link href="/contribute?mode=form" className="rounded-lg border border-stone-300 px-3 py-1.5 font-medium text-stone-700 hover:bg-stone-100">{L === "es" ? "Modo avanzado (formulario)" : "Advanced mode (form)"}</Link>
       </div>
 
       <div className="mt-8"><RepoBuilder /></div>

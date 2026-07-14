@@ -29,8 +29,8 @@ export default function NewsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="text-3xl font-bold text-stone-900">Novedades</h1>
-      <p className="mt-2 max-w-2xl text-stone-600">Noticias, divulgación científica y recursos multimedia del Proyecto EASER.</p>
+      <h1 className="text-3xl font-bold text-stone-900">{L === "es" ? "Novedades" : "News"}</h1>
+      <p className="mt-2 max-w-2xl text-stone-600">{L === "es" ? "Noticias, divulgación científica y recursos multimedia del Proyecto EASER." : "News, scientific outreach and multimedia resources from the EASER project."}</p>
 
       {loading ? <p className="mt-8 text-stone-500">…</p> : (
         <>

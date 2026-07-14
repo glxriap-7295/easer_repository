@@ -22,6 +22,7 @@ export function RepoBuilder() {
   const [description, setDescription] = useState("");
   const [projectType, setProjectType] = useState("research");
   const [keywords, setKeywords] = useState("");
+  const [customType, setCustomType] = useState("");
   const [folders, setFolders] = useState<Folder[]>(SUGGESTED_FOLDERS.slice(0, 4).map((name) => ({ name, files: [] })));
   const [newFolder, setNewFolder] = useState("");
   const [busy, setBusy] = useState("");
@@ -78,7 +79,7 @@ export function RepoBuilder() {
         authors: [{ name: profile?.displayName || user!.email, email: user!.email, orcid: profile?.orcid }],
         institutions: profile?.institution ? [{ name: profile.institution }] : [{ name: "EASER" }],
         contactName: profile?.displayName || user!.email, contactEmail: user!.email,
-        keywords: keywords.split(",").map((s) => s.trim()).filter(Boolean),
+        keywords: [customType, ...keywords.split(",")].map((s) => s.trim()).filter(Boolean),
         files
       }, true);
       router.push("/dashboard?submitted=1");
@@ -100,6 +101,7 @@ export function RepoBuilder() {
               <Select value={projectType} onChange={(e) => setProjectType(e.target.value)}>
                 {PROJECT_TYPES.map((pt) => <option key={pt.value} value={pt.value}>{pt.label[L]}</option>)}
               </Select>
+              {projectType === "other" && <Input value={customType} onChange={(e) => setCustomType(e.target.value)} placeholder={L === "es" ? "Especifica el tipo…" : "Specify the type…"} className="mt-2" />}
             </Field>
             <Field label={t("contribute.keywords")}><Input value={keywords} onChange={(e) => setKeywords(e.target.value)} /></Field>
           </div>
