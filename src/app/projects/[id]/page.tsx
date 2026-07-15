@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Card, Badge } from "@/components/ui";
+import { CategoryVisual } from "@/components/ui/visuals";
 import { Markdown } from "@/components/Markdown";
 import { PDFViewer } from "@/components/PDFViewer";
 import { InstitutionLogo } from "@/components/InstitutionLogo";
@@ -19,13 +20,25 @@ interface PublicProject {
   version: number; readme: string; summary: string; resources: Resource[];
   publications: Publication[]; extraResources: ProjectResource[];
   history: { version: number; at: string; note: string }[];
-  repoPath?: string; repoUrl?: string; githubUrl?: string; publishedAt?: string;
+  repoPath?: string; repoUrl?: string; githubUrl?: string; publishedAt?: string; createdAt?: string;
 }
 
-function Section({ id, title, children, es, en, lang }: { id: string; title?: string; children: React.ReactNode; es?: string; en?: string; lang: string }) {
+// Small inline icons for the Repository Contents row.
+const Icon = ({ d }: { d: string }) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{d.split("|").map((p, i) => <path key={i} d={p} />)}</svg>;
+const ICONS: Record<string, string> = {
+  models: "M4 7l8-4 8 4-8 4-8-4z|M4 7v6l8 4 8-4V7",
+  notebooks: "M4 4h13a2 2 0 0 1 2 2v14H6a2 2 0 0 1-2-2V4z|M4 4v0M9 4v16",
+  scripts: "M8 6l-4 6 4 6|M16 6l4 6-4 6|M13 4l-2 16",
+  datasets: "M12 5c4 0 7 1 7 3s-3 3-7 3-7-1-7-3 3-3 7-3z|M5 8v8c0 2 3 3 7 3s7-1 7-3V8",
+  figures: "M4 5h16v14H4z|M8 11a1.5 1.5 0 100-3 1.5 1.5 0 000 3z|M4 16l4-4 4 4 4-5 4 5",
+  gis: "M9 4l6 2 6-2v14l-6 2-6-2-6 2V6l6-2z|M9 4v14M15 6v14",
+  publications: "M6 3h9l3 3v15H6z|M9 8h6M9 12h6M9 16h4"
+};
+
+function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
-    <section id={id} className="scroll-mt-20">
-      <h2 className="text-xl font-bold text-stone-900">{title || (lang === "es" ? es : en)}</h2>
+    <section id={id} className="scroll-mt-24">
+      <h2 className="font-serif text-xl font-bold text-brand-800">{title}</h2>
       <div className="mt-3">{children}</div>
     </section>
   );
@@ -38,6 +51,7 @@ export default function ProjectPage() {
   const [p, setP] = useState<PublicProject | null>(null);
   const [err, setErr] = useState("");
   const [showReadme, setShowReadme] = useState(false);
+  const [showFullOverview, setShowFullOverview] = useState(false);
 
   useEffect(() => { apiGet<PublicProject>(`/api/public/projects/${id}`).then(setP).catch((e) => setErr(e.message)); }, [id]);
 
@@ -45,109 +59,158 @@ export default function ProjectPage() {
   if (!p) return <div className="mx-auto max-w-3xl px-4 py-16 text-stone-500">{t("common.loading")}</div>;
 
   const featuredPdf = p.resources.find((r) => r.category === "report" && r.isPdf && r.downloadUrl);
-  const tools = p.resources.filter((r) => r.category === "model");
   const groups = FILE_CATEGORIES.map((c) => ({ ...c, items: p.resources.filter((r) => r.category === c.value) })).filter((g) => g.items.length);
   const media = p.resources.filter((r) => /\.(png|jpe?g|gif|webp|svg|mp4|mov|webm)$/i.test(r.name) || r.category === "presentation");
-  const summaryCounts: { label: string; n: number }[] = [
-    { label: L === "es" ? "Modelos computacionales" : "Computational models", n: p.resources.filter((r) => r.category === "model" && !/\.ipynb$/i.test(r.name)).length },
-    { label: L === "es" ? "Notebooks" : "Notebooks", n: p.resources.filter((r) => /\.ipynb$/i.test(r.name)).length },
-    { label: L === "es" ? "Scripts" : "Scripts", n: p.resources.filter((r) => /\.(py|m|jl|r|sh|js|cpp|c|f90)$/i.test(r.name)).length },
-    { label: L === "es" ? "Conjuntos de datos" : "Datasets", n: p.resources.filter((r) => r.category === "dataset").length },
-    { label: L === "es" ? "Figuras" : "Figures", n: p.resources.filter((r) => /\.(png|jpe?g|gif|webp|svg|tif|tiff)$/i.test(r.name)).length },
-    { label: L === "es" ? "Capas GIS" : "GIS layers", n: p.resources.filter((r) => r.category === "gis").length },
-    { label: L === "es" ? "Publicaciones" : "Publications", n: p.publications.length }
+  const contents: { key: string; label: string; n: number }[] = [
+    { key: "models", label: L === "es" ? "Modelos" : "Models", n: p.resources.filter((r) => r.category === "model" && !/\.ipynb$/i.test(r.name)).length },
+    { key: "datasets", label: L === "es" ? "Datos" : "Datasets", n: p.resources.filter((r) => r.category === "dataset").length },
+    { key: "scripts", label: "Scripts", n: p.resources.filter((r) => /\.(py|m|jl|r|sh|js|cpp|c|f90)$/i.test(r.name)).length },
+    { key: "figures", label: L === "es" ? "Figuras" : "Figures", n: p.resources.filter((r) => /\.(png|jpe?g|gif|webp|svg|tif|tiff)$/i.test(r.name)).length },
+    { key: "notebooks", label: "Notebooks", n: p.resources.filter((r) => /\.ipynb$/i.test(r.name)).length },
+    { key: "gis", label: L === "es" ? "GIS" : "GIS", n: p.resources.filter((r) => r.category === "gis").length },
+    { key: "publications", label: L === "es" ? "Publicaciones" : "Publications", n: p.publications.length }
   ].filter((c) => c.n > 0);
+
+  const period = p.publishedAt ? new Date(p.publishedAt).getFullYear().toString() : (p.createdAt ? new Date(p.createdAt).getFullYear().toString() : "—");
+  const tabs: { id: string; label: string }[] = [
+    { id: "overview", label: L === "es" ? "Resumen" : "Overview" },
+    { id: "description", label: L === "es" ? "Descripción" : "Description" },
+    ...(p.extraResources.length || p.repoUrl ? [{ id: "resources", label: L === "es" ? "Recursos" : "Resources" }] : []),
+    ...(p.readme ? [{ id: "repository", label: L === "es" ? "Repositorio" : "Repository" }] : []),
+    ...(groups.length ? [{ id: "downloads", label: L === "es" ? "Descargas" : "Downloads" }] : []),
+    ...(p.publications.length ? [{ id: "publications", label: L === "es" ? "Publicaciones" : "Publications" }] : []),
+    ...(media.length ? [{ id: "media", label: L === "es" ? "Multimedia" : "Media" }] : []),
+    { id: "related", label: L === "es" ? "Relacionados" : "Related Projects" }
+  ];
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      <Link href="/browse" className="text-sm text-accent-700 hover:underline">← {t("common.browse")}</Link>
+      {/* Breadcrumb */}
+      <nav className="text-sm text-stone-500">
+        <Link href="/browse" className="hover:text-brand-700 hover:underline">{L === "es" ? "Proyectos" : "Projects"}</Link>
+        <span className="mx-2 text-stone-300">/</span>
+        <span className="text-stone-700">{p.title}</span>
+      </nav>
 
-      {/* Header */}
-      <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
+      {/* Hero */}
+      <div className="mt-4 grid gap-6 md:grid-cols-[1fr_1.2fr]">
+        <CategoryVisual seed={p.id} className="h-56 w-full md:h-full" />
         <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge color="blue">{projectTypeLabel(p.projectType, L)}</Badge>
-            <Badge>v{p.version}</Badge>
-          </div>
-          <h1 className="mt-2 text-3xl font-bold text-stone-900">{p.title}</h1>
+          <Badge color="blue">{projectTypeLabel(p.projectType, L)}</Badge>
+          <h1 className="mt-3 font-serif text-3xl font-bold leading-tight text-stone-900">{p.title}</h1>
+          <p className="mt-3 text-stone-600">{p.description}</p>
+          {p.keywords?.length > 0 && <div className="mt-4 flex flex-wrap gap-1">{p.keywords.slice(0, 6).map((k) => <Badge key={k}>{k}</Badge>)}</div>}
         </div>
-        {p.repoUrl && <a href={p.repoUrl} target="_blank" rel="noreferrer" className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-100">{L === "es" ? "Ver en GitHub" : "View on GitHub"} ↗</a>}
       </div>
-      <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-stone-600">
-        <span><span className="font-medium text-stone-500">{L === "es" ? "Autores" : "Authors"}:</span> {p.authors.map((a) => a.name).join(", ") || "—"}</span>
-        {p.publishedAt && <span><span className="font-medium text-stone-500">{L === "es" ? "Publicado" : "Published"}:</span> {new Date(p.publishedAt).toLocaleDateString()}</span>}
-      </div>
-      {p.institutions.length > 0 && <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">{p.institutions.map((i) => <InstitutionLogo key={i.name} name={i.name} className="h-6" showName />)}</div>}
-      {p.keywords?.length > 0 && <div className="mt-3 flex flex-wrap gap-1">{p.keywords.map((k) => <Badge key={k}>{k}</Badge>)}</div>}
 
-      <div className="mt-8 space-y-10">
-        {/* 1 · Scientific Overview */}
-        <Section id="overview" lang={L} es="Resumen científico" en="Scientific Overview">
+      {/* Metadata strip */}
+      <div className="mt-8 grid gap-4 rounded-xl border border-stone-200 bg-white p-5 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">{L === "es" ? "Investigador principal" : "Principal Investigator"}</p>
+          <p className="mt-1 text-sm font-medium text-stone-800">{p.authors[0]?.name || "—"}</p>
+        </div>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">{L === "es" ? "Institución" : "Institution"}</p>
+          <p className="mt-1 text-sm font-medium text-stone-800">{p.institutions[0]?.name || "—"}</p>
+        </div>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">{L === "es" ? "Publicado" : "Published"}</p>
+          <p className="mt-1 text-sm font-medium text-stone-800">{period}</p>
+        </div>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">{L === "es" ? "Repositorio" : "Repository"}</p>
+          {p.repoUrl
+            ? <a href={p.repoUrl} target="_blank" rel="noreferrer" className="mt-1 inline-block text-sm font-medium text-accent-700 hover:underline">{L === "es" ? "Ver repositorio" : "Visit repository"} ↗</a>
+            : <p className="mt-1 text-sm text-stone-500">—</p>}
+        </div>
+      </div>
+
+      {/* Tab nav */}
+      <div className="sticky top-14 z-10 mt-8 -mx-4 overflow-x-auto border-b border-stone-200 bg-stone-50/95 px-4 backdrop-blur">
+        <nav className="flex gap-5 text-sm">
+          {tabs.map((tb) => (
+            <a key={tb.id} href={`#${tb.id}`} className="whitespace-nowrap border-b-2 border-transparent py-3 font-medium text-stone-500 transition hover:border-brand-400 hover:text-brand-800">{tb.label}</a>
+          ))}
+        </nav>
+      </div>
+
+      <div className="mt-8 space-y-12">
+        {/* Scientific Overview */}
+        <Section id="overview" title={L === "es" ? "Resumen científico" : "Scientific Overview"}>
           {featuredPdf && (
             <div className="mb-4">
               <p className="mb-2 text-sm font-medium text-stone-500">{L === "es" ? "Documento destacado" : "Featured paper"}</p>
               <PDFViewer url={featuredPdf.downloadUrl!} fileName={featuredPdf.name} title={p.title} />
             </div>
           )}
-          <Card className="p-6"><Markdown>{p.summary}</Markdown></Card>
-        </Section>
-
-        {/* Repository Summary */}
-        {summaryCounts.length > 0 && (
-          <Section id="repo-summary" lang={L} es="Resumen del repositorio" en="Repository Summary">
-            <Card className="p-5">
-              <p className="text-sm text-stone-600">{L === "es" ? "El repositorio incluye:" : "The repository includes:"}</p>
-              <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {summaryCounts.map((c) => (
-                  <div key={c.label} className="rounded-lg border border-stone-100 bg-stone-50 p-3 text-center">
-                    <p className="font-serif text-2xl font-bold text-brand-700">{c.n}</p>
-                    <p className="text-xs text-stone-600">{c.label}</p>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </Section>
-        )}
-
-        {/* 2 · Project Description */}
-        <Section id="description" lang={L} es="Descripción del proyecto" en="Project Description">
-          <Card className="p-6 text-sm">
-            <p className="text-stone-700">{p.description || "—"}</p>
-            {p.purpose && <p className="mt-3 text-stone-700"><span className="font-medium text-stone-500">{L === "es" ? "Propósito" : "Purpose"}:</span> {p.purpose}</p>}
-            <p className="mt-3 text-stone-700"><span className="font-medium text-stone-500">{L === "es" ? "Herramientas computacionales" : "Computational tools"}:</span> {tools.length ? tools.map((tt) => tt.name).join(", ") : (L === "es" ? "Ver recursos" : "See resources")}</p>
+          <Card className="p-6">
+            <div className={showFullOverview ? "" : "line-clamp-6"}><Markdown>{p.summary}</Markdown></div>
+            <button onClick={() => setShowFullOverview((s) => !s)} className="mt-3 text-sm font-medium text-accent-700 hover:underline">
+              {showFullOverview ? (L === "es" ? "Ver menos" : "Show less") : (L === "es" ? "Ver resumen completo" : "View full overview")} →
+            </button>
+            <p className="mt-4 border-t border-stone-100 pt-3 text-xs text-stone-400">
+              {L === "es"
+                ? "Generado automáticamente a partir del contenido del repositorio y revisado por los autores del proyecto cuando corresponde."
+                : "Automatically generated from repository contents and reviewed by project authors when applicable."}
+            </p>
           </Card>
         </Section>
 
-        {/* 3 · Resources */}
-        {(p.extraResources.length > 0 || p.repoUrl) && (
-          <Section id="resources" lang={L} es="Recursos" en="Resources">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {p.repoUrl && (
-                <a href={p.repoUrl} target="_blank" rel="noreferrer"><Card className="h-full p-4 transition hover:shadow-card"><Badge color="blue">GitHub</Badge><p className="mt-1 font-medium text-stone-900">{L === "es" ? "Repositorio" : "Repository"}</p><p className="text-xs text-stone-500">{L === "es" ? "Contenido completo del proyecto" : "Full project contents"}</p></Card></a>
-              )}
-              {p.extraResources.map((r, i) => (
-                <a key={i} href={r.url || "#"} target={r.url ? "_blank" : undefined} rel="noreferrer"><Card className="h-full p-4 transition hover:shadow-card"><Badge>{r.kind}</Badge><p className="mt-1 font-medium text-stone-900">{r.label}</p>{r.description && <p className="text-xs text-stone-500">{r.description}</p>}</Card></a>
+        {/* Repository Contents (summary before the tree) */}
+        {contents.length > 0 && (
+          <Section id="repo-contents" title={L === "es" ? "Contenido del repositorio" : "Repository Contents"}>
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+              {contents.map((c) => (
+                <div key={c.key} className="flex flex-col items-center rounded-xl border border-stone-200 bg-white p-4 text-center text-brand-700">
+                  <Icon d={ICONS[c.key] || ICONS.datasets} />
+                  <p className="mt-2 font-serif text-2xl font-bold text-stone-900">{c.n}</p>
+                  <p className="text-xs text-stone-500">{c.label}</p>
+                </div>
               ))}
             </div>
           </Section>
         )}
 
-        {/* 4 · Repository (README) */}
+        {/* Description */}
+        <Section id="description" title={L === "es" ? "Descripción" : "Description"}>
+          <Card className="p-6 text-sm">
+            <p className="text-stone-700">{p.description || "—"}</p>
+            {p.purpose && <p className="mt-3 text-stone-700"><span className="font-medium text-stone-500">{L === "es" ? "Propósito" : "Purpose"}:</span> {p.purpose}</p>}
+            {p.institutions.length > 0 && <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">{p.institutions.map((i) => <InstitutionLogo key={i.name} name={i.name} className="h-6" showName />)}</div>}
+          </Card>
+        </Section>
+
+        {/* Resources */}
+        {(p.extraResources.length > 0 || p.repoUrl) && (
+          <Section id="resources" title={L === "es" ? "Recursos" : "Resources"}>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {p.repoUrl && (
+                <a href={p.repoUrl} target="_blank" rel="noreferrer"><Card className="h-full p-4 transition hover:shadow-card"><Badge color="blue">{L === "es" ? "Repositorio" : "Repository"}</Badge><p className="mt-1 font-medium text-stone-900">{L === "es" ? "Contenido del proyecto" : "Project repository"}</p><p className="text-xs text-stone-500">{L === "es" ? "Contenido completo del proyecto" : "Full project contents"}</p></Card></a>
+              )}
+              {p.extraResources.map((r, i) => (
+                <a key={i} href={r.url || "#"} target={r.url ? "_blank" : undefined} rel="noreferrer"><Card className="h-full p-4 transition hover:shadow-card"><Badge>{r.provider || r.kind}</Badge><p className="mt-1 font-medium text-stone-900">{r.label}</p>{r.description && <p className="text-xs text-stone-500">{r.description}</p>}</Card></a>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-stone-400">{L === "es" ? "Los recursos externos se alojan fuera de GitHub; el repositorio conserva sus metadatos." : "External resources are hosted outside GitHub; the repository keeps their metadata."}</p>
+          </Section>
+        )}
+
+        {/* Repository (tree / README) — after the summary */}
         {p.readme && (
-          <Section id="repository" lang={L} es="Repositorio" en="Repository">
+          <Section id="repository" title={L === "es" ? "Repositorio" : "Repository"}>
             <Card className="p-6">
               <div className="flex items-center justify-between">
                 <p className="text-sm text-stone-600">{L === "es" ? "Documentación técnica generada del repositorio." : "Technical documentation generated from the repository."}</p>
-                <button onClick={() => setShowReadme(!showReadme)} className="text-sm text-accent-700 hover:underline">{showReadme ? (L === "es" ? "Ocultar README" : "Hide README") : (L === "es" ? "Ver README" : "View README")}</button>
+                <button onClick={() => setShowReadme(!showReadme)} className="text-sm font-medium text-accent-700 hover:underline">{showReadme ? (L === "es" ? "Ocultar README" : "Hide README") : (L === "es" ? "Ver README" : "View README")}</button>
               </div>
               {showReadme && <div className="mt-4 border-t border-stone-100 pt-4"><Markdown>{p.readme}</Markdown></div>}
             </Card>
           </Section>
         )}
 
-        {/* 5 · Downloads */}
+        {/* Downloads */}
         {groups.length > 0 && (
-          <Section id="downloads" lang={L} es="Descargas" en="Downloads">
+          <Section id="downloads" title={L === "es" ? "Descargas" : "Downloads"}>
             <div className="space-y-4">
               {groups.map((g) => (
                 <Card key={g.value} className="p-4">
@@ -171,9 +234,9 @@ export default function ProjectPage() {
           </Section>
         )}
 
-        {/* 6 · Publications */}
+        {/* Publications */}
         {p.publications.length > 0 && (
-          <Section id="publications" lang={L} es="Publicaciones" en="Publications">
+          <Section id="publications" title={L === "es" ? "Publicaciones" : "Publications"}>
             <div className="space-y-3">
               {p.publications.map((pub, i) => {
                 const link = pub.url || (pub.doi ? `https://doi.org/${pub.doi}` : "");
@@ -194,9 +257,9 @@ export default function ProjectPage() {
           </Section>
         )}
 
-        {/* 7 · Media */}
+        {/* Media */}
         {media.length > 0 && (
-          <Section id="media" lang={L} es="Multimedia" en="Media">
+          <Section id="media" title={L === "es" ? "Multimedia" : "Media"}>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {media.map((m, i) => (
                 <Card key={i} className="p-3 text-sm">
@@ -212,11 +275,11 @@ export default function ProjectPage() {
           </Section>
         )}
 
-        {/* 8 · Related Projects */}
-        <Section id="related" lang={L} es="Proyectos relacionados" en="Related Projects">
+        {/* Related Projects */}
+        <Section id="related" title={L === "es" ? "Proyectos relacionados" : "Related Projects"}>
           <Card className="p-6 text-sm text-stone-600">
             {L === "es" ? "Explora más proyectos de investigación de EASER." : "Explore more EASER research projects."}
-            {" "}<Link href="/browse" className="text-accent-700 hover:underline">{L === "es" ? "Ver todos" : "Browse all"} →</Link>
+            {" "}<Link href="/browse" className="font-medium text-accent-700 hover:underline">{L === "es" ? "Ver todos" : "Browse all"} →</Link>
           </Card>
         </Section>
 

@@ -11,6 +11,7 @@ const PUBLIC = ["approved", "published"];
 function toCard(p: Project) {
   return {
     id: p.id, title: p.title, description: p.description,
+    projectType: p.projectType || "research",
     authors: p.authors.map((a) => a.name),
     institutions: orderInstitutions(p.institutions).map((i) => i.name),
     keywords: p.keywords, version: p.version || 1,

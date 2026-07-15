@@ -39,8 +39,8 @@ export default function TeamPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="text-3xl font-bold text-stone-900">{L === "es" ? "Equipo" : "Team"}</h1>
-      <p className="mt-2 max-w-2xl text-stone-600">{L === "es" ? "El equipo multidisciplinario de investigación detrás de EASER." : "The multidisciplinary research team behind EASER."}</p>
+      <h1 className="font-serif text-4xl font-bold text-stone-900">{L === "es" ? "Nuestro Equipo" : "Our Team"}</h1>
+      <p className="mt-3 max-w-2xl text-stone-600">{L === "es" ? "Un equipo multidisciplinario de investigadores, profesionales y estudiantes comprometidos con la investigación sísmica." : "A multidisciplinary team of researchers, professionals and students committed to seismic research."}</p>
 
       {loading ? <p className="mt-8 text-stone-500">…</p> : (
         <>

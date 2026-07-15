@@ -300,7 +300,8 @@ export const PROJECT_TYPES: { value: string; label: { en: string; es: string } }
   { value: "software", label: { en: "Software Package", es: "Paquete de software" } },
   { value: "educational", label: { en: "Educational Resource", es: "Recurso educativo" } },
   { value: "field_campaign", label: { en: "Field Campaign", es: "Campaña de terreno" } },
-  { value: "reconnaissance", label: { en: "Reconnaissance", es: "Reconocimiento" } }
+  { value: "reconnaissance", label: { en: "Reconnaissance", es: "Reconocimiento" } },
+  { value: "other", label: { en: "Other", es: "Otro" } }
 ];
 export function projectTypeLabel(value: string | undefined, lang: "en" | "es"): string {
   return PROJECT_TYPES.find((t) => t.value === value)?.label[lang] || (lang === "es" ? "Proyecto de investigación" : "Research Project");

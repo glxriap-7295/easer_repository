@@ -5,8 +5,8 @@ export function Button({
   children, variant = "primary", className, ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "ghost" | "danger" }) {
   const styles = {
-    primary: "bg-brand-600 text-white hover:bg-brand-700",
-    secondary: "bg-white text-brand-700 border border-brand-200 hover:bg-brand-50",
+    primary: "bg-brand-700 text-white shadow-sm hover:bg-brand-800",
+    secondary: "bg-white text-brand-800 border border-stone-300 hover:bg-stone-50",
     ghost: "text-brand-700 hover:bg-brand-50",
     danger: "bg-red-600 text-white hover:bg-red-700"
   }[variant];
@@ -21,7 +21,7 @@ export function Button({
 }
 
 export function LinkButton({ href, children, variant = "primary", className }: { href: string; children: React.ReactNode; variant?: "primary" | "secondary"; className?: string }) {
-  const styles = variant === "primary" ? "bg-brand-600 text-white hover:bg-brand-700" : "bg-white text-brand-700 border border-brand-200 hover:bg-brand-50";
+  const styles = variant === "primary" ? "bg-brand-700 text-white shadow-sm hover:bg-brand-800" : "bg-white text-brand-800 border border-stone-300 hover:bg-stone-50";
   return (
     <Link href={href} className={clsx("inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition", styles, className)}>
       {children}
