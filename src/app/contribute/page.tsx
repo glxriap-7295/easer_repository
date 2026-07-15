@@ -27,12 +27,13 @@ function ContributeInner() {
 
   // Default contribution experience: the visual Repository Builder.
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="text-3xl font-bold text-stone-900">{L === "es" ? "Contribuir un proyecto" : "Contribute a project"}</h1>
-      <p className="mt-2 text-stone-600">{L === "es" ? "Organiza tu investigación como un repositorio. Diseña las carpetas, arrastra tus archivos y envía — el equipo EASER lo revisa y la plataforma crea el repositorio automáticamente." : "Organize your research as a repository. Design the folders, drop in your files, and submit — the EASER team reviews it and the platform creates the repository automatically."}</p>
-
-      <div className="mt-4 flex flex-wrap gap-3 text-sm">
-        <Link href="/contribute/import" className="rounded-lg border border-stone-300 px-3 py-1.5 font-medium text-stone-700 hover:bg-stone-100">{L === "es" ? "Importar repositorio existente" : "Import existing repository"}</Link>
+    <div className="mx-auto max-w-5xl px-4 py-12">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-serif text-4xl font-bold text-stone-900">{L === "es" ? "Contribuir un proyecto" : "Contribute a Project"}</h1>
+          <p className="mt-3 max-w-2xl text-stone-600">{L === "es" ? "Comparte tu investigación, datos y herramientas con la comunidad EASER. Diseña tu repositorio, sube tus archivos y envíalo — el equipo lo revisa y la plataforma crea el repositorio automáticamente." : "Share your research, data and tools with the EASER community. Design your repository, upload your files and submit — the team reviews it and the platform creates the repository automatically."}</p>
+        </div>
+        <Link href="/contribute/import" className="mt-2 shrink-0 rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50">{L === "es" ? "Importar repositorio existente" : "Import existing repository"}</Link>
       </div>
 
       <div className="mt-8"><RepoBuilder /></div>
@@ -42,7 +43,7 @@ function ContributeInner() {
 
 export default function ContributePage() {
   return (
-    <Suspense fallback={<div className="mx-auto max-w-3xl px-4 py-12 text-stone-500">…</div>}>
+    <Suspense fallback={<div className="mx-auto max-w-5xl px-4 py-12 text-stone-500">…</div>}>
       <ContributeInner />
     </Suspense>
   );
