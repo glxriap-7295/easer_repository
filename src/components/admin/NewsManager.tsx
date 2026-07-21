@@ -52,11 +52,6 @@ export function NewsManager() {
     try { await apiPost("/api/admin/news", { title: "Untitled post", status: "draft", content: "" }, true); load(); }
     catch (e: any) { setErr(e.message); } finally { setBusy(""); }
   }
-  async function sync() {
-    setBusy("sync"); setErr("");
-    try { const r = await apiPost<{ message: string }>("/api/admin/sync-news", {}, true); load(); alert(r.message); }
-    catch (e: any) { setErr(e.message); } finally { setBusy(""); }
-  }
   async function save(p: NewsPost) {
     setBusy(p.id); setErr("");
     try { await apiPatch(`/api/admin/news/${p.id}`, { ...p, tags: Array.isArray(p.tags) ? p.tags : String(p.tags || "").split(",").map((t) => t.trim()).filter(Boolean) }); load(); }
@@ -95,7 +90,7 @@ export function NewsManager() {
       {/* Tabs */}
       <div className="flex items-center gap-6 border-b border-stone-200">
         <button className={tabCls("posts")} onClick={() => setTab("posts")}>Published News</button>
-        <button className={tabCls("connectors")} onClick={() => setTab("connectors")}>Connectors</button>
+        <button className={tabCls("connectors")} onClick={() => setTab("connectors")}>Official Channels</button>
       </div>
 
       {err && <Card className="mt-3 border-red-200 bg-red-50 p-3 text-sm text-red-700">{err}</Card>}
@@ -105,7 +100,6 @@ export function NewsManager() {
           <div className="mt-4 flex items-center justify-between">
             <p className="text-sm text-stone-500">{posts.length} post(s)</p>
             <div className="flex items-center gap-2">
-              <Button variant="secondary" disabled={!!busy} onClick={sync}>Import official news</Button>
               <Button onClick={add} disabled={!!busy}>+ New post</Button>
             </div>
           </div>
@@ -144,28 +138,18 @@ export function NewsManager() {
         </>
       ) : (
         <div className="mt-6">
-          <h3 className="font-serif text-lg font-semibold text-stone-900">External Connectors</h3>
-          <p className="mt-1 max-w-2xl text-sm text-stone-500">Connect official EASER channels to streamline updates and keep content in sync. Automatic synchronization is coming soon — for now each connector links directly to its official channel.</p>
+          <h3 className="font-serif text-lg font-semibold text-stone-900">Official Channels</h3>
+          <p className="mt-1 max-w-2xl text-sm text-stone-500">Access EASER&apos;s official communication channels and open-source resources. These links provide quick access to the organization&apos;s official platforms.</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {CONNECTORS.map((c) => (
               <Card key={c.key} className="flex flex-col p-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-serif font-semibold text-stone-900">{c.name}</p>
-                    <p className="text-xs text-stone-500">{c.sub}</p>
-                  </div>
-                  <Badge color="amber">Coming soon</Badge>
+                <div>
+                  <p className="font-serif font-semibold text-stone-900">{c.name}</p>
+                  <p className="text-xs text-stone-500">{c.sub}</p>
                 </div>
-                <a href={c.url} target="_blank" rel="noreferrer" className="mt-4 inline-block text-sm font-medium text-accent-700 hover:underline">Open channel ↗</a>
+                <a href={c.url} target="_blank" rel="noreferrer" className="mt-4 inline-block text-sm font-medium text-accent-700 hover:underline">Open channel →</a>
               </Card>
             ))}
-          </div>
-
-          <h3 className="mt-10 font-serif text-lg font-semibold text-stone-900">Manual Import</h3>
-          <p className="mt-1 max-w-2xl text-sm text-stone-500">Import news from external channels while automatic sync is not available. Paste a post URL to create a news item, or pull curated official updates.</p>
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <Button variant="secondary" disabled={!!busy} onClick={sync}>Import official news</Button>
-            <Button onClick={() => { setTab("posts"); add(); }} disabled={!!busy}>+ New post from URL</Button>
           </div>
         </div>
       )}
