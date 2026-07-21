@@ -307,6 +307,20 @@ export function projectTypeLabel(value: string | undefined, lang: "en" | "es"): 
   return PROJECT_TYPES.find((t) => t.value === value)?.label[lang] || (lang === "es" ? "Proyecto de investigación" : "Research Project");
 }
 
+/* ───────────── Event classification (news items with kind = "event") ───────────── */
+export const EVENT_TYPES: { value: string; label: { en: string; es: string } }[] = [
+  { value: "seminar", label: { en: "Seminar", es: "Seminario" } },
+  { value: "workshop", label: { en: "Workshop", es: "Taller" } },
+  { value: "conference", label: { en: "Conference", es: "Congreso" } },
+  { value: "webinar", label: { en: "Webinar", es: "Webinar" } },
+  { value: "guest_lecture", label: { en: "Guest Lecture", es: "Charla invitada" } },
+  { value: "meeting", label: { en: "Meeting", es: "Reunión" } },
+  { value: "other", label: { en: "Other", es: "Otro" } }
+];
+export function eventTypeLabel(value: string | undefined, lang: "en" | "es"): string {
+  return EVENT_TYPES.find((t) => t.value === value)?.label[lang] || (lang === "es" ? "Evento" : "Event");
+}
+
 export const RESOURCE_KINDS: { value: string; label: { en: string; es: string } }[] = [
   { value: "repository", label: { en: "GitHub Repository", es: "Repositorio GitHub" } },
   { value: "publication", label: { en: "Publication", es: "Publicación" } },

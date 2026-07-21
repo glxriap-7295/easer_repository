@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui";
 import { CategoryVisual, HeroScene, AnimatedCount } from "@/components/ui/visuals";
 import { PartnerLogos } from "@/components/InstitutionLogo";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { apiGet } from "@/lib/client";
-import { EASER_TAGLINE, EASER_ABSTRACT, STUDY_AREAS, projectTypeLabel } from "@/lib/constants";
+import { EASER_TAGLINE, EASER_ABSTRACT, projectTypeLabel } from "@/lib/constants";
 import type { NewsPost } from "@/lib/types";
 
 interface Stats { projects: number; researchers: number; datasets: number; models: number; publications: number; }
@@ -15,12 +16,27 @@ interface ProjectCardData {
   keywords: string[]; projectType?: string; year: number;
 }
 
+// Small gold line-icons for the hero statistics.
+const StatIcon = ({ d }: { d: string }) => (
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-accent-300">
+    {d.split("|").map((p, i) => <path key={i} d={p} />)}
+  </svg>
+);
+const ICON = {
+  projects: "M4 7l8-4 8 4-8 4-8-4z|M4 7v6l8 4 8-4V7",
+  contributors: "M9 11a3 3 0 100-6 3 3 0 000 6z|M17 11a3 3 0 100-6 3 3 0 000 6z|M2 20c0-3 3-5 7-5s7 2 7 5|M16 15c3 0 6 2 6 5",
+  datasets: "M12 5c4 0 7 1 7 3s-3 3-7 3-7-1-7-3 3-3 7-3z|M5 8v8c0 2 3 3 7 3s7-1 7-3V8",
+  tools: "M8 6l-4 6 4 6|M16 6l4 6-4 6|M13 4l-2 16",
+  publications: "M6 3h9l3 3v15H6z|M9 8h6M9 12h6M9 16h4"
+};
+
 export default function Home() {
   const { lang } = useT();
   const L = lang === "es" ? "es" : "en";
   const [projects, setProjects] = useState<ProjectCardData[]>([]);
   const [news, setNews] = useState<NewsPost[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [heroImgOk, setHeroImgOk] = useState(true);
 
   useEffect(() => {
     apiGet<ProjectCardData[]>("/api/public/projects").then(setProjects).catch(() => {});
@@ -29,71 +45,114 @@ export default function Home() {
   }, []);
 
   const featured = projects.slice(0, 3);
-  const latestNews = news.slice(0, 3);
-  const activity = [
-    { label: L === "es" ? "Proyectos" : "Projects", value: stats?.projects },
-    { label: L === "es" ? "Contribuidores" : "Contributors", value: stats?.researchers },
-    { label: L === "es" ? "Conjuntos de datos" : "Datasets", value: stats?.datasets },
-    { label: L === "es" ? "Herramientas computacionales" : "Computational Tools", value: stats?.models },
-    { label: L === "es" ? "Publicaciones" : "Publications", value: stats?.publications }
+  const latestNews = news.filter((n) => n.kind !== "event").slice(0, 3);
+  const activity: { key: keyof typeof ICON; label: string; value?: number }[] = [
+    { key: "projects", label: L === "es" ? "Proyectos" : "Projects", value: stats?.projects },
+    { key: "contributors", label: L === "es" ? "Contribuidores" : "Contributors", value: stats?.researchers },
+    { key: "datasets", label: L === "es" ? "Conjuntos de datos" : "Datasets", value: stats?.datasets },
+    { key: "tools", label: L === "es" ? "Herramientas computacionales" : "Computational Tools", value: stats?.models },
+    { key: "publications", label: L === "es" ? "Publicaciones" : "Publications", value: stats?.publications }
+  ];
+
+  const purpose = [
+    {
+      eyebrow: L === "es" ? "Nuestro propósito" : "Our purpose",
+      heading: L === "es" ? "Ciencia para comunidades más resilientes" : "Science for more resilient communities",
+      body: ""
+    },
+    {
+      eyebrow: L === "es" ? "Nuestro enfoque" : "Our approach",
+      heading: "",
+      body: L === "es"
+        ? "Estudiamos, comprendemos y comunicamos el riesgo sísmico para apoyar decisiones informadas y salvar vidas."
+        : "We study, understand and communicate seismic risk to support informed decisions and save lives."
+    },
+    {
+      eyebrow: L === "es" ? "Colabora con EASER" : "Collaborate with EASER",
+      heading: "",
+      body: L === "es"
+        ? "Sé parte de nuestra red de investigadores, estudiantes e instituciones comprometidas con la reducción del riesgo sísmico."
+        : "Be part of our network of researchers, students and institutions committed to reducing seismic risk."
+    }
   ];
 
   return (
     <>
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden text-white">
+      <section className="relative isolate overflow-hidden text-white">
+        {/* Layer 1: SVG fallback (shown if the photo is missing or fails to load) */}
         <HeroScene />
-        <div className="relative mx-auto grid max-w-6xl gap-8 px-4 py-24 md:grid-cols-[1.5fr_1fr] md:py-28">
-          <div className="animate-[fadeup_0.7s_ease-out]">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-200">
-              {L === "es" ? "Investigación para un Chile resiliente" : "Research for a resilient Chile"}
-            </p>
-            <h1 className="mt-4 max-w-2xl font-serif text-4xl font-bold leading-[1.1] text-white md:text-5xl">{EASER_TAGLINE[L]}</h1>
-            <p className="mt-5 max-w-xl text-lg text-stone-100">
+        {/* Layer 2: cinematic photograph — optimized & preloaded via next/image.
+            `priority` emits <link rel="preload" as="image"> so it's the LCP asset.
+            Drop the earthquake photo at public/hero.jpg. */}
+        {heroImgOk && (
+          <Image
+            src="/hero.jpg"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            quality={70}
+            className="object-cover object-center"
+            style={{ filter: "brightness(0.9)" }}
+            onError={() => setHeroImgOk(false)}
+          />
+        )}
+        {/* Layer 3: forest-green overlay (~70%), heavier on the left for legibility */}
+        <div className="absolute inset-0" aria-hidden style={{ background: "linear-gradient(90deg, rgba(13,32,20,0.92) 0%, rgba(18,42,27,0.82) 40%, rgba(18,42,27,0.62) 100%)" }} />
+
+        <div className="relative mx-auto max-w-6xl px-4 py-24 md:py-32">
+          <div className="max-w-2xl animate-fadeup">
+            <h1 className="font-serif text-5xl font-bold leading-[1.05] text-white md:text-6xl">{EASER_TAGLINE[L]}</h1>
+            <p className="mt-6 max-w-xl text-lg text-stone-100/90">
               {L === "es"
-                ? "Explora datos, modelos, herramientas y publicaciones de la iniciativa de investigación EASER."
-                : "Explore data, models, tools and publications from the EASER research initiative."}
+                ? "Plataforma de investigación y difusión científica del Proyecto Anillo EASER."
+                : "Research and scientific dissemination platform of the EASER Anillo Project."}
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/browse" className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500">
+            <div className="mt-6 h-1 w-16 rounded bg-accent-400" />
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Link href="/browse" className="rounded-lg bg-accent-400 px-6 py-3 text-center text-sm font-semibold text-brand-900 shadow-sm transition hover:bg-accent-300">
                 {L === "es" ? "Explorar proyectos" : "Explore projects"}
               </Link>
-              <Link href="/our-work" className="rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-brand-800 shadow-sm transition hover:bg-stone-100">
-                {L === "es" ? "Conocer más" : "Learn more"}
+              <Link href="/our-work" className="rounded-lg border border-accent-300/80 px-6 py-3 text-center text-sm font-semibold text-accent-100 transition hover:bg-accent-300/10">
+                {L === "es" ? "Conocer nuestro trabajo" : "Learn about our work"}
               </Link>
             </div>
           </div>
 
-          {/* Study-area pins */}
-          <div className="hidden flex-col justify-center gap-8 md:flex">
-            {STUDY_AREAS.map((c) => (
-              <div key={c} className="flex items-center gap-5">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-accent-400/90 text-brand-900 shadow-lg">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" /></svg>
-                </span>
-                <span className="font-serif text-xl leading-none text-white">{c}</span>
+          {/* Statistics — live data, animated counters, icons */}
+          <dl className="mt-16 grid max-w-3xl grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
+            {activity.map((m) => (
+              <div key={m.key}>
+                <StatIcon d={ICON[m.key]} />
+                <dt className="mt-2 text-xs font-medium uppercase tracking-wide text-stone-200/80">{m.label}</dt>
+                <dd className="font-serif text-3xl font-bold text-white"><AnimatedCount value={m.value} /></dd>
               </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
+      {/* ── PURPOSE CARDS ────────────────────────────────────────────────── */}
+      <section className="section-alt">
+        <div className="mx-auto -mt-10 max-w-6xl px-4 pb-16">
+          <div className="grid gap-5 md:grid-cols-3">
+            {purpose.map((c) => (
+              <Card key={c.eyebrow} className="p-7">
+                <p className="text-xs font-semibold uppercase tracking-wide text-accent-700">{c.eyebrow}</p>
+                {c.heading
+                  ? <h2 className="mt-3 font-serif text-2xl font-bold leading-snug text-stone-900">{c.heading}</h2>
+                  : <p className="mt-3 text-stone-700">{c.body}</p>}
+                <div className="mt-6 h-1 w-10 rounded bg-accent-400" />
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── SCIENTIFIC ACTIVITY ──────────────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="text-2xl font-bold text-stone-900">{L === "es" ? "Actividad científica" : "Scientific Activity"}</h2>
-        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {activity.map((m) => (
-            <Card key={m.label} className="p-6 text-center transition hover:-translate-y-0.5 hover:shadow-card">
-              <p className="font-serif text-4xl font-bold text-brand-700"><AnimatedCount value={m.value} /></p>
-              <p className="mt-2 text-sm text-stone-600">{m.label}</p>
-            </Card>
-          ))}
-        </div>
-      </section>
-
       {/* ── LATEST NEWS ──────────────────────────────────────────────────── */}
       {latestNews.length > 0 && (
-        <section className="mx-auto max-w-6xl px-4 pb-4">
+        <section className="mx-auto max-w-6xl px-4 py-16">
           <div className="flex items-end justify-between">
             <h2 className="text-2xl font-bold text-stone-900">{L === "es" ? "Últimas noticias" : "Latest news"}</h2>
             <Link href="/news" className="text-sm font-medium text-accent-700 hover:underline">{L === "es" ? "Ver todas las noticias" : "View all news"} →</Link>

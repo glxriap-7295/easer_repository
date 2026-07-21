@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
   if (!b?.title) return fail("Title is required", 422);
   const now = new Date().toISOString();
   const status = b.status === "published" ? "published" : "draft";
+  const kind = b.kind === "event" ? "event" : "news";
   const n: NewsPost = {
     id: newId("nw"),
     slug: (b.slug ? slugify(b.slug) : slugify(b.title)) + "-" + Math.random().toString(36).slice(2, 6),
@@ -24,6 +25,14 @@ export async function POST(req: NextRequest) {
     content: b.content || "", authorName: b.authorName || user.email, authorId: b.authorId || undefined,
     tags: Array.isArray(b.tags) ? b.tags : [], status, pinned: !!b.pinned,
     externalLinks: Array.isArray(b.externalLinks) ? b.externalLinks : undefined,
+    kind,
+    eventType: kind === "event" ? (b.eventType || "seminar") : undefined,
+    startDate: kind === "event" ? (b.startDate || undefined) : undefined,
+    startTime: kind === "event" ? (b.startTime || undefined) : undefined,
+    endDate: kind === "event" ? (b.endDate || undefined) : undefined,
+    endTime: kind === "event" ? (b.endTime || undefined) : undefined,
+    location: kind === "event" ? (b.location || undefined) : undefined,
+    registrationUrl: kind === "event" ? (b.registrationUrl || undefined) : undefined,
     publishedAt: status === "published" ? (b.publishedAt || now) : undefined,
     createdAt: now, updatedAt: now
   };

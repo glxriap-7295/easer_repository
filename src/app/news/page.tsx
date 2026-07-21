@@ -5,7 +5,7 @@ import { Card, Badge } from "@/components/ui";
 import { CategoryVisual } from "@/components/ui/visuals";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { apiGet } from "@/lib/client";
-import { EASER_INFO, GITHUB_ORG_URL } from "@/lib/constants";
+import { EASER_INFO, GITHUB_ORG_URL, eventTypeLabel } from "@/lib/constants";
 import type { NewsPost } from "@/lib/types";
 
 // Brand icons (inline, monochrome — tinted per channel).
@@ -38,8 +38,21 @@ export default function NewsPage() {
   const [loading, setLoading] = useState(true);
   useEffect(() => { apiGet<NewsPost[]>("/api/news").then(setNews).catch(() => setNews([])).finally(() => setLoading(false)); }, []);
 
-  const featured = news.find((n) => n.pinned) || news[0];
-  const rest = news.filter((n) => n.id !== featured?.id).slice(0, 6);
+  // Split articles from events. Events surface only in the Upcoming Events section.
+  const articles = news.filter((n) => n.kind !== "event");
+  const featured = articles.find((n) => n.pinned) || articles[0];
+  const rest = articles.filter((n) => n.id !== featured?.id).slice(0, 6);
+
+  // Upcoming events: published, start date today or later, sorted chronologically.
+  const today = new Date().toISOString().slice(0, 10);
+  const events = news
+    .filter((n) => n.kind === "event" && n.startDate && n.startDate >= today)
+    .sort((a, b) => `${a.startDate}T${a.startTime || "00:00"}`.localeCompare(`${b.startDate}T${b.startTime || "00:00"}`));
+  const fmtEventDate = (n: NewsPost) => {
+    if (!n.startDate) return "";
+    const d = new Date(`${n.startDate}T${n.startTime || "00:00"}`);
+    return d.toLocaleDateString(L === "es" ? "es-CL" : "en-US", { day: "numeric", month: "short", year: "numeric" }) + (n.startTime ? ` · ${n.startTime}` : "");
+  };
 
   const T = {
     title: L === "es" ? "Novedades" : "News",
@@ -104,10 +117,35 @@ export default function NewsPage() {
               </section>
             )}
 
-            {/* Upcoming events */}
+            {/* Upcoming events — live, published, future-dated, chronological */}
             <section className="mt-12">
               <h2 className="font-serif text-xl font-bold text-stone-900">{T.events}</h2>
-              <Card className="mt-4 p-6 text-sm text-stone-600">{L === "es" ? "No hay eventos programados por el momento. Vuelve pronto para conocer seminarios, congresos y actividades de difusión." : "No events scheduled at the moment. Check back soon for seminars, conferences and outreach activities."}</Card>
+              {events.length === 0 ? (
+                <Card className="mt-4 p-6 text-sm text-stone-600">{L === "es" ? "No hay eventos programados por el momento. Vuelve pronto para conocer seminarios, congresos y actividades de difusión." : "No events scheduled at the moment. Check back soon for seminars, conferences and outreach activities."}</Card>
+              ) : (
+                <div className="mt-4 space-y-4">
+                  {events.map((n) => (
+                    <Card key={n.id} className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+                      <div className="shrink-0 rounded-lg bg-brand-50 px-4 py-3 text-center sm:w-28">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">{fmtEventDate(n)}</p>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge color="amber">{eventTypeLabel(n.eventType, L)}</Badge>
+                          {n.location && <span className="text-xs text-stone-500">📍 {n.location}</span>}
+                        </div>
+                        <h3 className="mt-1 font-serif font-semibold text-stone-900">{n.title}</h3>
+                        {n.subtitle && <p className="mt-0.5 line-clamp-2 text-sm text-stone-600">{n.subtitle}</p>}
+                      </div>
+                      <div className="shrink-0">
+                        {n.registrationUrl
+                          ? <a href={n.registrationUrl} target="_blank" rel="noreferrer" className="inline-block rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-800">{L === "es" ? "Inscribirse" : "Register"}</a>
+                          : <Link href={`/news/${n.slug}`} className="inline-block rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-50">{L === "es" ? "Más información" : "Learn More"}</Link>}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </section>
           </div>
 

@@ -9,7 +9,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const existing = await getNews(params.id);
   if (!existing) return fail("Not found", 404);
   const b = await req.json().catch(() => ({}));
-  const fields = ["title", "subtitle", "coverImage", "content", "authorName", "authorId", "tags", "pinned", "externalLinks", "status", "publishedAt"] as const;
+  const fields = ["title", "subtitle", "coverImage", "content", "authorName", "authorId", "tags", "pinned", "externalLinks", "status", "publishedAt",
+    "kind", "eventType", "startDate", "startTime", "endDate", "endTime", "location", "registrationUrl"] as const;
   const patch: any = {};
   for (const k of fields) if (k in b) patch[k] = b[k];
   // set publishedAt when transitioning to published without a date

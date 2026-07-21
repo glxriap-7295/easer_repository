@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Card, Button, Input, Textarea, Select, Field, Badge } from "@/components/ui";
 import { apiGet, apiPost, apiPatch, apiDelete, uploadFile } from "@/lib/client";
-import { EASER_INFO, GITHUB_ORG_URL } from "@/lib/constants";
+import { EASER_INFO, GITHUB_ORG_URL, EVENT_TYPES } from "@/lib/constants";
 import type { NewsPost } from "@/lib/types";
 
 // Downscale an image in-browser so cover uploads stay small: returns a Blob (for
@@ -43,13 +43,18 @@ export function NewsManager() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState("");
+  const [showNew, setShowNew] = useState(false);
+  const [newKind, setNewKind] = useState<"news" | "event">("news");
 
   function load() { setLoading(true); apiGet<NewsPost[]>("/api/admin/news", true).then(setPosts).catch((e) => setErr(e.message)).finally(() => setLoading(false)); }
   useEffect(load, []);
 
-  async function add() {
-    setBusy("add"); setErr("");
-    try { await apiPost("/api/admin/news", { title: "Untitled post", status: "draft", content: "" }, true); load(); }
+  async function add(kind: "news" | "event" = "news") {
+    setBusy("add"); setErr(""); setShowNew(false);
+    const base = kind === "event"
+      ? { title: "Untitled event", status: "draft", content: "", kind, eventType: "seminar" }
+      : { title: "Untitled post", status: "draft", content: "", kind };
+    try { await apiPost("/api/admin/news", base, true); load(); }
     catch (e: any) { setErr(e.message); } finally { setBusy(""); }
   }
   async function save(p: NewsPost) {
@@ -95,21 +100,45 @@ export function NewsManager() {
 
       {err && <Card className="mt-3 border-red-200 bg-red-50 p-3 text-sm text-red-700">{err}</Card>}
 
+      {/* Create New Content modal */}
+      {showNew && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setShowNew(false)}>
+          <Card className="w-full max-w-md p-6" >
+            <div onClick={(e) => e.stopPropagation()}>
+              <h3 className="font-serif text-lg font-semibold text-stone-900">Create New Content</h3>
+              <div className="mt-4 space-y-2">
+                {([["news", "News Article", "A standard news or outreach article."], ["event", "Event", "A seminar, workshop, conference or similar."]] as const).map(([k, label, desc]) => (
+                  <label key={k} className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 ${newKind === k ? "border-brand-600 bg-brand-50" : "border-stone-200 hover:bg-stone-50"}`}>
+                    <input type="radio" name="newkind" className="mt-1" checked={newKind === k} onChange={() => setNewKind(k)} />
+                    <span><span className="block text-sm font-medium text-stone-800">{label}</span><span className="block text-xs text-stone-500">{desc}</span></span>
+                  </label>
+                ))}
+              </div>
+              <div className="mt-5 flex justify-end gap-2">
+                <Button variant="secondary" onClick={() => setShowNew(false)}>Cancel</Button>
+                <Button onClick={() => add(newKind)} disabled={!!busy}>Continue</Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
       {tab === "posts" ? (
         <>
           <div className="mt-4 flex items-center justify-between">
             <p className="text-sm text-stone-500">{posts.length} post(s)</p>
             <div className="flex items-center gap-2">
-              <Button onClick={add} disabled={!!busy}>+ New post</Button>
+              <Button onClick={() => { setNewKind("news"); setShowNew(true); }} disabled={!!busy}>+ New post</Button>
             </div>
           </div>
           {loading ? <p className="mt-4 text-stone-500">Loading…</p> : (
             <div className="mt-4 space-y-4">
               {posts.map((p) => (
                 <Card key={p.id} className="p-4">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
                     <Badge color={p.status === "published" ? "green" : "slate"}>{p.status}</Badge>
-                    {p.status === "published" && <Link href={`/news/${p.slug}`} target="_blank" className="text-xs text-accent-700 hover:underline">View ↗</Link>}
+                    {p.kind === "event" && <Badge color="amber">Event</Badge>}
+                    {p.status === "published" && <Link href={`/news/${p.slug}`} target="_blank" className="ml-auto text-xs text-accent-700 hover:underline">View ↗</Link>}
                   </div>
                   <div className="mt-2 grid gap-2 sm:grid-cols-2">
                     <Field label="Title"><Input value={p.title} onChange={(e) => update(p.id, { title: e.target.value })} /></Field>
@@ -117,6 +146,26 @@ export function NewsManager() {
                     <Field label="Author"><Input value={p.authorName || ""} onChange={(e) => update(p.id, { authorName: e.target.value })} /></Field>
                     <Field label="Tags (comma-separated)"><Input value={Array.isArray(p.tags) ? p.tags.join(", ") : (p.tags as any) || ""} onChange={(e) => update(p.id, { tags: e.target.value.split(",").map((t) => t.trim()).filter(Boolean) })} /></Field>
                   </div>
+
+                  {/* Event-only fields (same editor, extra fields) */}
+                  {p.kind === "event" && (
+                    <div className="mt-2 rounded-lg border border-accent-200 bg-accent-50/40 p-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-accent-700">Event details</p>
+                      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                        <Field label="Event type">
+                          <Select value={p.eventType || "seminar"} onChange={(e) => update(p.id, { eventType: e.target.value })}>
+                            {EVENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label.en}</option>)}
+                          </Select>
+                        </Field>
+                        <Field label="Location"><Input value={p.location || ""} onChange={(e) => update(p.id, { location: e.target.value })} placeholder="Concepción, Chile / Online" /></Field>
+                        <Field label="Start date"><Input type="date" value={p.startDate || ""} onChange={(e) => update(p.id, { startDate: e.target.value })} /></Field>
+                        <Field label="Start time"><Input type="time" value={p.startTime || ""} onChange={(e) => update(p.id, { startTime: e.target.value })} /></Field>
+                        <Field label="End date (optional)"><Input type="date" value={p.endDate || ""} onChange={(e) => update(p.id, { endDate: e.target.value })} /></Field>
+                        <Field label="End time (optional)"><Input type="time" value={p.endTime || ""} onChange={(e) => update(p.id, { endTime: e.target.value })} /></Field>
+                        <Field label="Registration URL (optional)"><Input value={p.registrationUrl || ""} onChange={(e) => update(p.id, { registrationUrl: e.target.value })} placeholder="https://…" /></Field>
+                      </div>
+                    </div>
+                  )}
                   <div className="mt-2 flex items-center gap-3">
                     <label className="cursor-pointer text-sm text-accent-700 hover:underline">
                       {busy === "cover-" + p.id ? "Processing…" : p.coverImage ? "Replace cover" : "Upload cover"}

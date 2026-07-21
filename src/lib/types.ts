@@ -208,6 +208,16 @@ export interface NewsPost {
   status: "draft" | "published";
   pinned?: boolean;
   externalLinks?: string[];
+  // Content kind: a regular news article (default) or an event. Events reuse the
+  // same editor + lifecycle and add the fields below.
+  kind?: "news" | "event";
+  eventType?: string;        // seminar | workshop | conference | webinar | guest_lecture | meeting | other
+  startDate?: string;        // YYYY-MM-DD
+  startTime?: string;        // HH:MM
+  endDate?: string;          // optional YYYY-MM-DD
+  endTime?: string;          // optional HH:MM
+  location?: string;
+  registrationUrl?: string;
   publishedAt?: string;
   createdAt: string;
   updatedAt: string;
