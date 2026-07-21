@@ -16,20 +16,6 @@ interface ProjectCardData {
   keywords: string[]; projectType?: string; year: number;
 }
 
-// Small gold line-icons for the hero statistics.
-const StatIcon = ({ d }: { d: string }) => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="text-accent-300">
-    {d.split("|").map((p, i) => <path key={i} d={p} />)}
-  </svg>
-);
-const ICON = {
-  projects: "M4 7l8-4 8 4-8 4-8-4z|M4 7v6l8 4 8-4V7",
-  contributors: "M9 11a3 3 0 100-6 3 3 0 000 6z|M17 11a3 3 0 100-6 3 3 0 000 6z|M2 20c0-3 3-5 7-5s7 2 7 5|M16 15c3 0 6 2 6 5",
-  datasets: "M12 5c4 0 7 1 7 3s-3 3-7 3-7-1-7-3 3-3 7-3z|M5 8v8c0 2 3 3 7 3s7-1 7-3V8",
-  tools: "M8 6l-4 6 4 6|M16 6l4 6-4 6|M13 4l-2 16",
-  publications: "M6 3h9l3 3v15H6z|M9 8h6M9 12h6M9 16h4"
-};
-
 export default function Home() {
   const { lang } = useT();
   const L = lang === "es" ? "es" : "en";
@@ -46,12 +32,12 @@ export default function Home() {
 
   const featured = projects.slice(0, 3);
   const latestNews = news.filter((n) => n.kind !== "event").slice(0, 3);
-  const activity: { key: keyof typeof ICON; label: string; value?: number }[] = [
-    { key: "projects", label: L === "es" ? "Proyectos" : "Projects", value: stats?.projects },
-    { key: "contributors", label: L === "es" ? "Contribuidores" : "Contributors", value: stats?.researchers },
-    { key: "datasets", label: L === "es" ? "Conjuntos de datos" : "Datasets", value: stats?.datasets },
-    { key: "tools", label: L === "es" ? "Herramientas computacionales" : "Computational Tools", value: stats?.models },
-    { key: "publications", label: L === "es" ? "Publicaciones" : "Publications", value: stats?.publications }
+  const activity = [
+    { label: L === "es" ? "Proyectos" : "Projects", value: stats?.projects },
+    { label: L === "es" ? "Contribuidores" : "Contributors", value: stats?.researchers },
+    { label: L === "es" ? "Conjuntos de datos" : "Datasets", value: stats?.datasets },
+    { label: L === "es" ? "Herramientas computacionales" : "Computational Tools", value: stats?.models },
+    { label: L === "es" ? "Publicaciones" : "Publications", value: stats?.publications }
   ];
 
   const purpose = [
@@ -80,11 +66,11 @@ export default function Home() {
     <>
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section className="relative isolate overflow-hidden text-white">
-        {/* Layer 1: SVG fallback (shown if the photo is missing or fails to load) */}
+        {/* Layer 1: SVG fallback (only if the photo fails to load) */}
         <HeroScene />
-        {/* Layer 2: cinematic photograph — optimized & preloaded via next/image.
-            `priority` emits <link rel="preload" as="image"> so it's the LCP asset.
-            Drop the earthquake photo at public/hero.jpg. */}
+        {/* Layer 2: earthquake-response photograph — optimized & preloaded.
+            `priority` emits <link rel="preload" as="image"> (good LCP). Focal point
+            (the responders' interaction) is biased toward the right, away from text. */}
         {heroImgOk && (
           <Image
             src="/hero.jpg"
@@ -92,19 +78,22 @@ export default function Home() {
             fill
             priority
             sizes="100vw"
-            quality={70}
-            className="object-cover object-center"
-            style={{ filter: "brightness(0.9)" }}
+            quality={72}
+            className="object-cover object-[62%_center] md:object-[70%_center]"
+            style={{ filter: "brightness(0.96)" }}
             onError={() => setHeroImgOk(false)}
           />
         )}
-        {/* Layer 3: forest-green overlay (~70%), heavier on the left for legibility */}
-        <div className="absolute inset-0" aria-hidden style={{ background: "linear-gradient(90deg, rgba(13,32,20,0.92) 0%, rgba(18,42,27,0.82) 40%, rgba(18,42,27,0.62) 100%)" }} />
+        {/* Layer 3: forest-green overlay (~60%) — heavier on the left for text legibility */}
+        <div className="absolute inset-0" aria-hidden style={{ background: "linear-gradient(90deg, rgba(18,42,27,0.74) 0%, rgba(18,42,27,0.58) 55%, rgba(18,42,27,0.46) 100%)" }} />
 
-        <div className="relative mx-auto max-w-6xl px-4 py-24 md:py-32">
-          <div className="max-w-2xl animate-fadeup">
-            <h1 className="font-serif text-5xl font-bold leading-[1.05] text-white md:text-6xl">{EASER_TAGLINE[L]}</h1>
-            <p className="mt-6 max-w-xl text-lg text-stone-100/90">
+        <div className="relative mx-auto grid max-w-6xl gap-8 px-4 py-24 md:grid-cols-[1.5fr_1fr] md:py-28">
+          <div className="animate-fadeup">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-200">
+              {L === "es" ? "Investigación para un Chile resiliente" : "Research for a resilient Chile"}
+            </p>
+            <h1 className="mt-4 max-w-2xl font-serif text-4xl font-bold leading-[1.1] text-white md:text-5xl">{EASER_TAGLINE[L]}</h1>
+            <p className="mt-5 max-w-xl text-lg text-stone-100">
               {L === "es"
                 ? "Plataforma de investigación y difusión científica del Proyecto Anillo EASER."
                 : "Research and scientific dissemination platform of the EASER Anillo Project."}
@@ -119,23 +108,25 @@ export default function Home() {
               </Link>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Statistics — live data, animated counters, icons */}
-          <dl className="mt-16 grid max-w-3xl grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
-            {activity.map((m) => (
-              <div key={m.key}>
-                <StatIcon d={ICON[m.key]} />
-                <dt className="mt-2 text-xs font-medium uppercase tracking-wide text-stone-200/80">{m.label}</dt>
-                <dd className="font-serif text-3xl font-bold text-white"><AnimatedCount value={m.value} /></dd>
-              </div>
-            ))}
-          </dl>
+      {/* ── SCIENTIFIC ACTIVITY ──────────────────────────────────────────── */}
+      <section className="mx-auto max-w-6xl px-4 py-16">
+        <h2 className="text-2xl font-bold text-stone-900">{L === "es" ? "Actividad científica" : "Scientific Activity"}</h2>
+        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {activity.map((m) => (
+            <Card key={m.label} className="p-6 text-center transition hover:-translate-y-0.5 hover:shadow-card">
+              <p className="font-serif text-4xl font-bold text-brand-700"><AnimatedCount value={m.value} /></p>
+              <p className="mt-2 text-sm text-stone-600">{m.label}</p>
+            </Card>
+          ))}
         </div>
       </section>
 
       {/* ── PURPOSE CARDS ────────────────────────────────────────────────── */}
       <section className="section-alt">
-        <div className="mx-auto -mt-10 max-w-6xl px-4 pb-16">
+        <div className="mx-auto max-w-6xl px-4 py-16">
           <div className="grid gap-5 md:grid-cols-3">
             {purpose.map((c) => (
               <Card key={c.eyebrow} className="p-7">
