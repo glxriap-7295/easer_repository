@@ -48,8 +48,8 @@ export default function Home() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-200">
               {L === "es" ? "Investigación para un Chile resiliente" : "Research for a resilient Chile"}
             </p>
-            <h1 className="mt-4 max-w-2xl font-serif text-4xl font-bold leading-[1.1] md:text-5xl">{EASER_TAGLINE[L]}</h1>
-            <p className="mt-5 max-w-xl text-lg text-brand-50/90">
+            <h1 className="mt-4 max-w-2xl font-serif text-4xl font-bold leading-[1.1] text-white md:text-5xl">{EASER_TAGLINE[L]}</h1>
+            <p className="mt-5 max-w-xl text-lg text-stone-100">
               {L === "es"
                 ? "Explora datos, modelos, herramientas y publicaciones de la iniciativa de investigación EASER."
                 : "Explore data, models, tools and publications from the EASER research initiative."}
@@ -65,13 +65,13 @@ export default function Home() {
           </div>
 
           {/* Study-area pins */}
-          <div className="hidden flex-col justify-center gap-4 md:flex">
-            {STUDY_AREAS.map((c, i) => (
-              <div key={c} className="flex items-center gap-3" style={{ marginLeft: `${i * 28}px` }}>
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-accent-400/90 text-brand-900 shadow-lg">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" /></svg>
+          <div className="hidden flex-col justify-center gap-8 md:flex">
+            {STUDY_AREAS.map((c) => (
+              <div key={c} className="flex items-center gap-5">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-accent-400/90 text-brand-900 shadow-lg">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" /></svg>
                 </span>
-                <span className="font-serif text-lg text-white">{c}</span>
+                <span className="font-serif text-xl leading-none text-white">{c}</span>
               </div>
             ))}
           </div>

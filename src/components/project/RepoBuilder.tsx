@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Card, Button, Input, Textarea, Select, Field, Badge } from "@/components/ui";
 import { Stepper } from "@/components/ui/visuals";
-import { apiPost } from "@/lib/client";
+import { apiPost, uploadFile } from "@/lib/client";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { PROJECT_TYPES, inferFileCategory, slugify } from "@/lib/constants";
@@ -65,11 +65,8 @@ export function RepoBuilder() {
     setBusy("upload"); setErr("");
     try {
       for (const file of Array.from(list)) {
-        const fd = new FormData(); fd.append("file", file);
-        const res = await fetch("/api/upload", { method: "POST", body: fd });
-        const json = await res.json();
-        if (!json.ok) throw new Error(json.error);
-        const uf: UploadedFile = { ...json.data, folder: sel.name, category: inferFileCategory(json.data.name, sel.name), metadata: {} };
+        const data = await uploadFile(file);
+        const uf: UploadedFile = { ...data, folder: sel.name, category: inferFileCategory(data.name, sel.name), metadata: {} };
         setFolders((s) => s.map((f, j) => (j === selected ? { ...f, files: [...f.files, uf] } : f)));
       }
     } catch (e: any) { setErr(`Upload failed: ${e.message}`); } finally { setBusy(""); }

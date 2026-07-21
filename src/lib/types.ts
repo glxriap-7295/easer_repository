@@ -132,8 +132,10 @@ export interface Project {
 
   // Lifecycle artifacts
   slug?: string;
+  subtitle?: string;   // optional short subtitle (editable)
   readme?: string;     // generated human-readable README
-  summary?: string;    // generated AI_SUMMARY
+  summary?: string;    // Scientific Overview (generated, then editable)
+  summaryEdited?: boolean; // true once a human edits the Scientific Overview → never auto-overwritten
   version?: number;
   history?: ProjectVersion[];
   draft?: DocumentationDraft;

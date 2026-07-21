@@ -78,7 +78,12 @@ export const draftProjectSchema = z.object({
   keywords: z.array(z.string()).default([]),
   license: z.string().optional(),
   relatedLinks: z.array(z.string()).optional(),
-  files: z.array(uploadedFileSchema).default([])
+  files: z.array(uploadedFileSchema).default([]),
+  // Editable after import / in the draft editor (all optional, additive).
+  subtitle: z.string().optional(),
+  summary: z.string().optional(),           // Scientific Overview (editable)
+  publications: z.array(z.any()).optional(),
+  resources: z.array(z.any()).optional()
 });
 
 // Strict schema enforced when a researcher SUBMITS for review.

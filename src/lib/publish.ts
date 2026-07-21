@@ -46,12 +46,21 @@ export async function publishProject(p: Project, actorEmail: string): Promise<Pr
   // For "repo" the files sit at the repository root.
   const prefix = target === "repo" ? "" : `${PUBLISHED_ROOT}/${folder}/`;
 
+  // Imported projects point at an EXISTING external repository — it must never be
+  // modified. They publish "metadata only": we make the project public without
+  // committing anything to GitHub.
+  const isImported = !!p.repo?.importedFrom;
+
   const docs = await generateProjectDocs(p);
+  // Preserve human-edited Scientific Overview (and the imported README) — never
+  // overwrite them with freshly generated text.
+  const finalSummary = p.summaryEdited && p.summary ? p.summary : docs.summary;
+  const finalReadme = isImported && p.readme ? p.readme : docs.readme;
 
   const storage = getStorageProvider();
   const commitFiles: CommitFile[] = [
-    { path: `${prefix}README.md`, content: docs.readme, encoding: "utf-8" },
-    { path: `${prefix}AI_SUMMARY.md`, content: docs.summary, encoding: "utf-8" }
+    { path: `${prefix}README.md`, content: finalReadme, encoding: "utf-8" },
+    { path: `${prefix}AI_SUMMARY.md`, content: finalSummary, encoding: "utf-8" }
   ];
   const manifest: { name: string; category: string; path: string }[] = [];
   for (const file of p.files) {
@@ -89,7 +98,14 @@ export async function publishProject(p: Project, actorEmail: string): Promise<Pr
   let usedCommitStrategy: boolean;
   let prNumber: number | undefined;
 
-  if (target === "repo") {
+  if (isImported) {
+    // Make public WITHOUT touching the source repository (no commit).
+    const owner = p.repo!.owner!, name = p.repo!.name!;
+    commitUrl = p.repo?.url || p.githubCommitUrl || `https://github.com/${owner}/${name}`;
+    repoTarget = { strategy: "repo", owner, name, url: p.repo?.url || commitUrl, defaultBranch: p.repo?.defaultBranch || "main", importedFrom: p.repo?.importedFrom };
+    repoPath = "";
+    usedCommitStrategy = true; // treat as published (public) immediately on approval
+  } else if (target === "repo") {
     // Independent repository per project (create if missing, commit to its main).
     const repo = p.repo?.name
       ? { owner: p.repo.owner!, name: p.repo.name, url: p.repo.url!, defaultBranch: p.repo.defaultBranch || "main" }
@@ -123,7 +139,7 @@ export async function publishProject(p: Project, actorEmail: string): Promise<Pr
     {
       status, repoPath, slug, version: nextVersion, repo: repoTarget,
       history: [...(p.history || []), version],
-      readme: docs.readme, summary: docs.summary,
+      readme: finalReadme, summary: finalSummary,
       githubCommitUrl: commitUrl, githubPrNumber: prNumber, publishedAt: now
     },
     { at: now, actor: actorEmail, action: status, note: `v${nextVersion} · ${commitUrl}` });
@@ -147,7 +163,8 @@ export async function publishProject(p: Project, actorEmail: string): Promise<Pr
   });
 
   // Clear temporary staged bytes once they're safely committed to the branch.
-  if (usedCommitStrategy) {
+  // Imported projects have no staged bytes (files link to the external repo).
+  if (usedCommitStrategy && !isImported) {
     await Promise.allSettled(p.files.map((file) => storage.delete(file.storageKey)));
   }
 

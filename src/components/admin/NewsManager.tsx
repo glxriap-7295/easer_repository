@@ -2,12 +2,28 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Card, Button, Input, Textarea, Select, Field, Badge } from "@/components/ui";
-import { apiGet, apiPost, apiPatch, apiDelete } from "@/lib/client";
+import { apiGet, apiPost, apiPatch, apiDelete, uploadFile } from "@/lib/client";
 import { EASER_INFO, GITHUB_ORG_URL } from "@/lib/constants";
 import type { NewsPost } from "@/lib/types";
 
-async function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = rej; r.readAsDataURL(file); });
+// Downscale an image in-browser so cover uploads stay small: returns a Blob (for
+// the storage endpoint) and a data URL (fallback when storage has no public URL).
+async function downscaleImage(file: File, maxDim = 1600, quality = 0.82): Promise<{ blob: Blob; dataUrl: string }> {
+  const bitmap = await createImageBitmap(file).catch(() => null);
+  if (!bitmap) {
+    const dataUrl = await new Promise<string>((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = () => rej(new Error("Could not read the image file.")); r.readAsDataURL(file); });
+    return { blob: file, dataUrl };
+  }
+  const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
+  const w = Math.max(1, Math.round(bitmap.width * scale)), h = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Image processing is not supported in this browser.");
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  const dataUrl = canvas.toDataURL("image/jpeg", quality);
+  const blob = await new Promise<Blob>((res) => canvas.toBlob((b) => res(b || file), "image/jpeg", quality));
+  return { blob, dataUrl };
 }
 
 // External channel connectors. Designed so a real API sync can be wired in later
@@ -54,6 +70,24 @@ export function NewsManager() {
   }
   function update(id: string, patch: Partial<NewsPost>) { setPosts((s) => s.map((p) => (p.id === id ? { ...p, ...patch } : p))); }
 
+  // Cover upload: downscale, try the storage endpoint (Firebase Storage when
+  // configured), and fall back to a compact data URL. Never surfaces raw errors.
+  async function setCover(id: string, file: File) {
+    setBusy("cover-" + id); setErr("");
+    try {
+      const { blob, dataUrl } = await downscaleImage(file);
+      let coverImage = dataUrl;
+      try {
+        const jpg = new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
+        const up = await uploadFile(jpg);
+        if (up.url) coverImage = up.url;
+      } catch { /* storage unavailable — keep the downscaled data URL */ }
+      update(id, { coverImage });
+    } catch (e: any) {
+      setErr(`Could not add the cover image: ${e.message || "please try a different image."}`);
+    } finally { setBusy(""); }
+  }
+
   const tabCls = (t: string) => `border-b-2 px-1 pb-2 text-sm font-medium transition ${tab === t ? "border-brand-700 text-brand-800" : "border-transparent text-stone-500 hover:text-stone-700"}`;
 
   return (
@@ -90,9 +124,9 @@ export function NewsManager() {
                     <Field label="Tags (comma-separated)"><Input value={Array.isArray(p.tags) ? p.tags.join(", ") : (p.tags as any) || ""} onChange={(e) => update(p.id, { tags: e.target.value.split(",").map((t) => t.trim()).filter(Boolean) })} /></Field>
                   </div>
                   <div className="mt-2 flex items-center gap-3">
-                    <label className="cursor-pointer text-sm text-accent-700">
-                      {p.coverImage ? "Replace cover" : "Upload cover"}
-                      <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) update(p.id, { coverImage: await fileToDataUrl(f) }); }} />
+                    <label className="cursor-pointer text-sm text-accent-700 hover:underline">
+                      {busy === "cover-" + p.id ? "Processing…" : p.coverImage ? "Replace cover" : "Upload cover"}
+                      <input type="file" accept="image/*" className="hidden" disabled={busy === "cover-" + p.id} onChange={(e) => { const f = e.target.files?.[0]; if (f) setCover(p.id, f); e.target.value = ""; }} />
                     </label>
                     {p.coverImage && /* eslint-disable-next-line @next/next/no-img-element */ <img src={p.coverImage} alt="" className="h-10 w-16 rounded object-cover" />}
                   </div>

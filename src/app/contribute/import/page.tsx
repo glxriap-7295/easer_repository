@@ -44,7 +44,10 @@ export default function ImportPage() {
     setErr(""); setBusy(true);
     try {
       const r = await apiPost<{ id: string }>("/api/projects/import", { url, title: title || undefined, projectType }, true);
-      router.push(`/projects/${r.id}`);
+      // Imported repositories become editable DRAFTS — open the draft editor so
+      // the researcher can review/edit before submitting for review. Nothing is
+      // published until an admin approves it.
+      router.push(`/contribute?draft=${r.id}`);
     } catch (e: any) { setErr(e.message); setBusy(false); }
   }
 
@@ -109,12 +112,12 @@ export default function ImportPage() {
                 </Select>
               </Field>
             </div>
-            <p className="mt-3 text-xs text-stone-400">{L === "es" ? "El repositorio original no se modifica. Se preservan la estructura y la atribución." : "The original repository is not modified. Structure and attribution are preserved."}</p>
+            <p className="mt-3 text-xs text-stone-400">{L === "es" ? "El repositorio original no se modifica. La importación crea un borrador editable que revisas y envías a aprobación — nada se publica automáticamente." : "The original repository is not modified. Importing creates an editable draft that you review and submit for approval — nothing is published automatically."}</p>
           </Card>
 
           <div className="mt-5 flex items-center justify-between">
             <Button variant="ghost" onClick={() => setStep(1)}>← {L === "es" ? "Atrás" : "Back"}</Button>
-            <Button onClick={doImport} disabled={busy}>{busy ? (L === "es" ? "Importando…" : "Importing…") : (L === "es" ? "Importar repositorio" : "Import repository")}</Button>
+            <Button onClick={doImport} disabled={busy}>{busy ? (L === "es" ? "Creando borrador…" : "Creating draft…") : (L === "es" ? "Importar y editar" : "Import & edit")}</Button>
           </div>
         </>
       )}

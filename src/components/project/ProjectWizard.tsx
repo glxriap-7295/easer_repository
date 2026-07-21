@@ -4,10 +4,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { Card, Button, Input, Textarea, Select, Field, Badge } from "@/components/ui";
 import { FILE_CATEGORIES, FILE_METADATA_FIELDS, type FileCategory } from "@/lib/constants";
-import { apiPost, apiPatch, apiGet } from "@/lib/client";
+import { apiPost, apiPatch, apiGet, uploadFile } from "@/lib/client";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useT } from "@/components/i18n/LanguageProvider";
-import type { Author, Institution, UploadedFile, Project } from "@/lib/types";
+import type { Author, Institution, UploadedFile, Project, Publication, ProjectResource } from "@/lib/types";
+
+const EXT_PROVIDERS = ["NSF DesignSafe", "Zenodo", "Figshare", "Institutional Repository", "Google Drive", "Dropbox", "OneDrive", "AWS S3", "Other"];
 
 // New strings (kept inline bilingual to avoid touching the shared dictionary).
 const STR = {
@@ -38,22 +40,26 @@ const STR = {
 };
 
 interface FormState {
-  title: string; description: string; purpose: string;
+  title: string; subtitle: string; description: string; purpose: string; summary: string;
   authors: Author[]; institutions: Institution[]; contactName: string; contactEmail: string;
   keywords: string; license: string; files: UploadedFile[];
+  publications: Publication[]; resources: ProjectResource[];
 }
 const blank: FormState = {
-  title: "", description: "", purpose: "",
+  title: "", subtitle: "", description: "", purpose: "", summary: "",
   authors: [{ name: "", email: "", orcid: "" }], institutions: [{ name: "", department: "" }],
-  contactName: "", contactEmail: "", keywords: "", license: "", files: []
+  contactName: "", contactEmail: "", keywords: "", license: "", files: [],
+  publications: [], resources: []
 };
 function fromProject(p: Project): FormState {
   return {
-    title: p.title || "", description: p.description || "", purpose: p.purpose || "",
+    title: p.title || "", subtitle: p.subtitle || "", description: p.description || "", purpose: p.purpose || "",
+    summary: p.summary || "",
     authors: p.authors?.length ? p.authors : [{ name: "", email: "", orcid: "" }],
     institutions: p.institutions?.length ? p.institutions : [{ name: "", department: "" }],
     contactName: p.contactName || "", contactEmail: p.contactEmail || "",
-    keywords: (p.keywords || []).join(", "), license: p.license || "", files: p.files || []
+    keywords: (p.keywords || []).join(", "), license: p.license || "", files: p.files || [],
+    publications: p.publications || [], resources: p.resources || []
   };
 }
 
@@ -98,11 +104,8 @@ export function ProjectWizard({ projectId }: { projectId?: string }) {
     setBusy("upload"); setErr("");
     try {
       for (const file of Array.from(list)) {
-        const fd = new FormData(); fd.append("file", file);
-        const res = await fetch("/api/upload", { method: "POST", body: fd });
-        const json = await res.json();
-        if (!json.ok) throw new Error(json.error);
-        setF((st) => ({ ...st, files: [...st.files, { ...json.data, category: "other" as FileCategory, metadata: {} }] }));
+        const data = await uploadFile(file);
+        setF((st) => ({ ...st, files: [...st.files, { ...data, category: "other" as FileCategory, metadata: {} }] }));
       }
     } catch (e: any) { setErr(`Upload failed: ${e.message}`); }
     finally { setBusy(""); }
@@ -121,13 +124,24 @@ export function ProjectWizard({ projectId }: { projectId?: string }) {
 
   function payload(extra: object = {}) {
     return {
-      title: f.title, description: f.description, purpose: f.purpose,
+      title: f.title, subtitle: f.subtitle || undefined, description: f.description, purpose: f.purpose,
+      summary: f.summary || undefined,
       authors: f.authors.filter((a) => a.name.trim()), institutions: f.institutions.filter((i) => i.name.trim()),
       contactName: f.contactName, contactEmail: f.contactEmail,
       keywords: f.keywords.split(",").map((x) => x.trim()).filter(Boolean),
-      license: f.license || undefined, files: f.files, ...extra
+      license: f.license || undefined, files: f.files,
+      publications: f.publications.filter((p) => (p.title || "").trim()),
+      resources: f.resources.filter((r) => (r.label || "").trim()),
+      ...extra
     };
   }
+  // Publications + external research resources (editable; persisted with the draft).
+  function addPublication() { setF((st) => ({ ...st, publications: [...st.publications, { title: "", authors: "", journal: "", doi: "", url: "" }] })); }
+  function setPublication(i: number, patch: Partial<Publication>) { setF((st) => ({ ...st, publications: st.publications.map((p, j) => (j === i ? { ...p, ...patch } : p)) })); }
+  function removePublication(i: number) { setF((st) => ({ ...st, publications: st.publications.filter((_, j) => j !== i) })); }
+  function addResource() { setF((st) => ({ ...st, resources: [...st.resources, { kind: "external", label: "", url: "", description: "", provider: EXT_PROVIDERS[0] }] })); }
+  function setResource(i: number, patch: Partial<ProjectResource>) { setF((st) => ({ ...st, resources: st.resources.map((r, j) => (j === i ? { ...r, ...patch } : r)) })); }
+  function removeResource(i: number) { setF((st) => ({ ...st, resources: st.resources.filter((_, j) => j !== i) })); }
   async function saveDraft() {
     if (!f.title.trim()) { setStep(2); return setErr("Add a title before saving a draft."); }
     setBusy("draft"); setErr(""); setInfo("");
@@ -206,12 +220,23 @@ export function ProjectWizard({ projectId }: { projectId?: string }) {
           <h2 className="font-serif text-lg font-semibold text-stone-900">{t("contribute.project")}</h2>
           <div className="mt-4 grid gap-4">
             <Field label={t("contribute.title")} required><Input value={f.title} onChange={set("title")} /></Field>
+            <Field label={lang === "es" ? "Subtítulo" : "Subtitle"}><Input value={f.subtitle} onChange={set("subtitle")} /></Field>
             <Field label={t("contribute.description")} required><Textarea rows={3} value={f.description} onChange={set("description")} /></Field>
             <Field label={t("contribute.purpose")} required><Textarea rows={2} value={f.purpose} onChange={set("purpose")} /></Field>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label={t("contribute.keywords")}><Input value={f.keywords} onChange={set("keywords")} /></Field>
               <Field label={t("contribute.license")}><Input value={f.license} onChange={set("license")} /></Field>
             </div>
+          </div>
+
+          {/* Editable Scientific Overview (generated draft; researcher reviews & edits) */}
+          <div className="mt-6 border-t border-stone-100 pt-6">
+            <div className="flex items-center justify-between">
+              <h3 className="font-serif font-semibold text-brand-800">{lang === "es" ? "Resumen científico" : "Scientific Overview"}</h3>
+              {f.summary.trim() && <span className="text-xs text-stone-400">{f.summary.trim().length} {lang === "es" ? "caracteres" : "chars"}</span>}
+            </div>
+            <p className="mt-1 text-xs text-stone-500">{lang === "es" ? "Borrador generado automáticamente a partir del contenido. Revísalo y edítalo libremente; tus cambios se guardan y no se sobrescriben." : "An initial draft generated from the contents. Review and edit it freely — your changes are saved and never overwritten."}</p>
+            <Textarea rows={8} value={f.summary} onChange={set("summary")} className="mt-2 font-mono text-xs" placeholder={lang === "es" ? "El resumen se generará al guardar si lo dejas vacío." : "A draft is generated on save if left empty."} />
           </div>
         </Card>
       )}
@@ -263,6 +288,52 @@ export function ProjectWizard({ projectId }: { projectId?: string }) {
               </div>
             ))}
             {!f.files.length && <p className="text-sm text-stone-500">{t("contribute.noFiles")}</p>}
+          </div>
+
+          {/* Publications */}
+          <div className="mt-8 border-t border-stone-100 pt-6">
+            <div className="flex items-center justify-between">
+              <h3 className="font-serif font-semibold text-brand-800">{lang === "es" ? "Publicaciones" : "Publications"}</h3>
+              <Button variant="ghost" onClick={addPublication}>+ {lang === "es" ? "Añadir" : "Add"}</Button>
+            </div>
+            <div className="mt-3 space-y-3">
+              {f.publications.map((pub, i) => (
+                <div key={i} className="grid gap-2 rounded-lg border border-stone-200 p-3 sm:grid-cols-2">
+                  <Input placeholder={lang === "es" ? "Título" : "Title"} value={pub.title || ""} onChange={(e) => setPublication(i, { title: e.target.value })} />
+                  <Input placeholder={lang === "es" ? "Autores" : "Authors"} value={pub.authors || ""} onChange={(e) => setPublication(i, { authors: e.target.value })} />
+                  <Input placeholder={lang === "es" ? "Revista / editorial" : "Journal / venue"} value={pub.journal || ""} onChange={(e) => setPublication(i, { journal: e.target.value })} />
+                  <Input placeholder="DOI" value={pub.doi || ""} onChange={(e) => setPublication(i, { doi: e.target.value })} />
+                  <div className="flex gap-2 sm:col-span-2">
+                    <Input placeholder="URL" value={pub.url || ""} onChange={(e) => setPublication(i, { url: e.target.value })} />
+                    <button className="shrink-0 text-red-500" onClick={() => removePublication(i)}>✕</button>
+                  </div>
+                </div>
+              ))}
+              {!f.publications.length && <p className="text-sm text-stone-500">{lang === "es" ? "Sin publicaciones." : "No publications."}</p>}
+            </div>
+          </div>
+
+          {/* External Research Resources */}
+          <div className="mt-8 border-t border-stone-100 pt-6">
+            <div className="flex items-center justify-between">
+              <h3 className="font-serif font-semibold text-brand-800">{lang === "es" ? "Recursos de investigación externos" : "External Research Resources"}</h3>
+              <Button variant="ghost" onClick={addResource}>+ {lang === "es" ? "Añadir" : "Add"}</Button>
+            </div>
+            <p className="mt-1 text-xs text-stone-500">{lang === "es" ? "Enlaza conjuntos de datos grandes alojados fuera de GitHub. Solo se guardan sus metadatos." : "Link large datasets hosted outside GitHub. Only their metadata is stored."}</p>
+            <div className="mt-3 space-y-3">
+              {f.resources.map((r, i) => (
+                <div key={i} className="grid gap-2 rounded-lg border border-stone-200 p-3 sm:grid-cols-2">
+                  <Input placeholder={lang === "es" ? "Título" : "Title"} value={r.label || ""} onChange={(e) => setResource(i, { label: e.target.value })} />
+                  <Select value={r.provider || EXT_PROVIDERS[0]} onChange={(e) => setResource(i, { provider: e.target.value })}>{EXT_PROVIDERS.map((p) => <option key={p}>{p}</option>)}</Select>
+                  <Input placeholder="URL" value={r.url || ""} onChange={(e) => setResource(i, { url: e.target.value })} />
+                  <div className="flex gap-2">
+                    <Input placeholder={lang === "es" ? "Descripción / tamaño / acceso" : "Description / size / access"} value={r.description || ""} onChange={(e) => setResource(i, { description: e.target.value })} />
+                    <button className="shrink-0 text-red-500" onClick={() => removeResource(i)}>✕</button>
+                  </div>
+                </div>
+              ))}
+              {!f.resources.length && <p className="text-sm text-stone-500">{lang === "es" ? "Sin recursos externos." : "No external resources."}</p>}
+            </div>
           </div>
         </Card>
       )}

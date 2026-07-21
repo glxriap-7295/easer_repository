@@ -37,6 +37,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (!parsed.success) return fail("Validation failed", 422, parsed.error.flatten());
     Object.assign(patch, parsed.data);
     if (parsed.data.title) patch.slug = slugify(parsed.data.title);
+    // A human edited the Scientific Overview → never auto-overwrite it later.
+    if (typeof parsed.data.summary === "string") patch.summaryEdited = true;
   }
 
   if (isCurator) {
@@ -48,6 +50,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         edited: true
       };
     }
+    // Reviewers may refine the Scientific Overview at any stage.
+    if (typeof body.summary === "string") { patch.summary = body.summary; patch.summaryEdited = true; }
     if (typeof body.status === "string") patch.status = body.status;
   }
 
